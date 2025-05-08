@@ -1,0 +1,11 @@
+.client-screen {
+    .client-container{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .table-client{
+        background-color: red !important;
+    }
+}
