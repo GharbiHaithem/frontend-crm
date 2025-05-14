@@ -27,6 +27,7 @@ const BonLivraisonPage = () => {
     typePaiement,
     commentaire,
   } = location.state;
+  console.log(location.state)
   const numeroLivraison = numero.startsWith("BL")
     ? numero
     : numero.replace(/^DV|^BC/, "BL");
@@ -151,7 +152,7 @@ const BonLivraisonPage = () => {
       <Box height={30} />
       <Box sx={{ display: "flex" }}>
         <Sidenav />
-        <Box component="main" sx={{ flexGrow: 1, p: 3, paddingTop: "350px" }}>
+        <Box component="main" sx={{ flexGrow: 1, p: 3, paddingTop: "10px" }}>
           <h1>Bon de Livraison</h1>
           <div className="document-form">
             <Box
@@ -216,7 +217,7 @@ const BonLivraisonPage = () => {
                   type="date"
                   fullWidth
                   margin="normal"
-                  value={date}
+                  value={ new Date(date).toISOString().split('T')[0]}
                   InputLabelProps={{ shrink: true }}
                   size="small"
                   disabled

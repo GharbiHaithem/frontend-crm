@@ -272,7 +272,7 @@ export default function Article() {
                           <IconButton
                             color="info"
                             component={Link}
-                            to={`/details/${article._id}`}
+                            to={`/article/details/${article._id}`}
                             aria-label="détails"
                             style={{ fontSize: "1.5rem" }}
                           >

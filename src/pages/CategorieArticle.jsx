@@ -206,7 +206,7 @@ export default function CategorieArticle() {
                   {Array.isArray(categorieArticles) && categorieArticles.map((categorieArticle) => (
                     <TableRow key={categorieArticle._id} hover style={{ height: "60px" }}>
                       <TableCell style={{ fontSize: "1.1rem", padding: "20px" }}>
-                        {categorieArticle.code}
+                        {categorieArticle.codeCategorie}
                       </TableCell>
                       <TableCell style={{ fontSize: "1.1rem", padding: "20px" }}>
                         {categorieArticle.designationCategorie}

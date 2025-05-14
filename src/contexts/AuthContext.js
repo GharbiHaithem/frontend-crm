@@ -7,6 +7,7 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
+  const[connected,setConnected] = useState(true)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -41,6 +42,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(user));
       
       setCurrentUser(user);
+      setConnected(true)
       return { success: true };
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'An error occurred during login';
@@ -72,10 +74,12 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('loggedInUser');
     localStorage.removeItem('user');
     setCurrentUser(null);
+    setConnected(false)
   };
 
   const value = {
     currentUser,
+    connected,
     loading,
     error,
     login,

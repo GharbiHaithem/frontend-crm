@@ -12,12 +12,18 @@ const validationSchema = Yup.object().shape({
     .required("La désignation est obligatoire")
     .min(3, "La désignation doit contenir au moins 3 caractères")
     .max(50, "La désignation ne peut pas dépasser 50 caractères"),
+
+     codeCategorie: Yup.string()
+    .required("La désignation est obligatoire")
+    .min(3, "La désignation doit contenir au moins 3 caractères")
+    .max(50, "La désignation ne peut pas dépasser 50 caractères"),
 });
 
 export default function CreateCategorieArticle() {
   const formik = useFormik({
     initialValues: {
       designationCategorie: "",
+     codeCategorie:""
     },
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
@@ -71,7 +77,7 @@ export default function CreateCategorieArticle() {
 
           <form className="flex items-center gap-10  w-full" onSubmit={formik.handleSubmit}>
         
-<Stack direction="row" alignItems="flex-start" spacing={2} sx={{ mt: 2, width: '80%' }}>
+<Stack direction="column" alignItems="flex-start" spacing={2} sx={{ mt: 2, width: '80%' }}>
   <TextField
     name="designationCategorie"
     label="Désignation de la Catégorie"
@@ -88,7 +94,22 @@ export default function CreateCategorieArticle() {
     helperText={formik.touched.designationCategorie && formik.errors.designationCategorie}
     size="small"
   />
-  
+    <TextField
+    name="codeCategorie"
+    label="code de la Catégorie"
+    sx={{ 
+      width: '80%', // Augmentez ce pourcentage selon vos besoins
+      '& .MuiOutlinedInput-root': {
+        height: '40px' // Ajuste la hauteur si nécessaire
+      }
+    }}
+    value={formik.values.codeCategorie}
+    onChange={formik.handleChange}
+    onBlur={formik.handleBlur}
+    error={formik.touched.codeCategorie && Boolean(formik.errors.codeCategorie)}
+    helperText={formik.touched.codeCategorie && formik.errors.codeCategorie}
+    size="small"
+  />
   <Button
     type="submit"
     color="primary"

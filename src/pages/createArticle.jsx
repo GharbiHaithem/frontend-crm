@@ -12,10 +12,12 @@ import {
   FormControlLabel,
   TextareaAutosize,
   FormHelperText,
+  Typography,
+  Paper,
 } from "@mui/material";
 import Sidenav from "../components/Sidenav";
 import Navbar from "../components/Navbar";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const validationSchema = Yup.object().shape({
   libelle: Yup.string().required("Ce champ est requis"),
@@ -30,7 +32,7 @@ const validationSchema = Yup.object().shape({
   marge: Yup.number().required("Ce champ est requis"),
   prixht: Yup.number().required("Ce champ est requis").positive(),
   prix_totale_concré: Yup.number().required("Ce champ est requis").positive(),
-  gestion_configuration: Yup.string().required("Ce champ est requis"),
+  
   configuration: Yup.string().required("Ce champ est requis"),
 
   Nature: Yup.string().required("Ce champ est requis"),
@@ -39,18 +41,7 @@ const validationSchema = Yup.object().shape({
   tva_achat: Yup.number().required("Ce champ est requis"),
   movement_article: Yup.string().required("Ce champ est requis"),
   prix_achat_initiale: Yup.number(),
-  longueur: Yup.number().when("dimension_article", {
-    is: true,
-    then: Yup.number().required("Ce champ est requis").positive(),
-  }),
-  largeur: Yup.number().when("dimension_article", {
-    is: true,
-    then: Yup.number().required("Ce champ est requis").positive(),
-  }),
-  hauteur: Yup.number().when("dimension_article", {
-    is: true,
-    then: Yup.number().required("Ce champ est requis").positive(),
-  }),
+
 });
 
 export default function CreateArticle() {
@@ -58,70 +49,98 @@ export default function CreateArticle() {
   const [familles, setFamilles] = useState([]);
   const [categories, setCategories] = useState([]);
   const [fournisseurs, setFournisseurs] = useState([]);
-
+  const {id} = useParams()
+  const[article,setArticle]  = useState({})
+  useEffect(()=>{
+    if (id) {
+    axios.get(`http://localhost:5000/articles/${id}`)
+      .then((response) => {
+        const articleData = response.data;
+        setArticle(articleData);
+        
+      
+      });
+  }
+ },[id])
+  console.log(article)
   const formik = useFormik({
     initialValues: {
-      libelle: "",
-      libelleFamille: "",
-      libeleCategorie: "",
-      Nombre_unite: 0,
-      tva: 0,
-      type: "",
-      prix_brut: 0,
-      remise: 0,
-      prix_net: 0,
-      marge: 0,
-      prixht: 0,
-      prix_totale_concré: 0,
-      gestion_configuration: "",
-      configuration: "",
+      libelle:id ? article.libelle : "",
+      libelleFamille:id ? article?.libelleFamille?._id :  "",
+      libeleCategorie:id ? article.libeleCategorie?._id :"",
+      Nombre_unite:id ? article.Nombre_unite : 0,
+      tva: id ? article.tva : 0,
+      type:id ? article.type : "",
+      prix_brut:id ? article.prix_brut : 0,
+      remise:id ? article.remise :  0,
+      prix_net:id ? article.prix_net : 0,
+      marge:id ? article.marge : 0,
+      prixht:id ? article.prixht : 0,
+      prix_totale_concré:id ? article.prix_totale_concré : 0,
+      gestion_configuration:id ? article.gestion_configuration : "",
+      configuration:id ? article.configuration : "",
       serie: false,
       series: [],
-      lib_fournisseur: "",
-      Nature: "",
-      image_article: null,
-      prixmin: 0,
-      prixmax: 0,
-      user_Connectée: "",
-      action_user_connecté: "",
+      lib_fournisseur: id ? article.lib_fournisseur :"",
+      Nature:  id ? article.Nature :"",
+      image_article:id ? article.image_article : null,
+      prixmin:id ? article.prixmin :  0,
+      prixmax:id ? article.prixmax : 0,
+      user_Connectée:id ? article.user_Connectée : "",
+      action_user_connecté:id ? article.action_user_connecté :  "",
       date_modif: new Date().toISOString().split("T")[0],
-      prix_achat_initiale: 0,
-      tva_achat: 0,
+      prix_achat_initiale:id ? article.prix_achat_initiale : 0,
+      tva_achat:id ? article.tva_achat :  0,
       dimension_article: false,
-      longueur: "",
-      largeur: "",
-      hauteur: "",
-      movement_article: "",
+      longueur: id ? article.longueur :0,
+      largeur:id ? article.largeur : 0,
+      hauteur: id ? article.hauteur :0,
+      movement_article:id ? article.movement_article : "",
     },
     validationSchema,
-    onSubmit: async (values) => {
-      try {
-        const formData = new FormData();
-        
-        // Ajout de tous les champs au FormData
-        Object.keys(values).forEach((key) => {
-          if (key === "image_article" && values[key]) {
-            formData.append(key, values[key]);
-          } else if (values[key] !== null && values[key] !== undefined) {
-            formData.append(key, values[key]);
-          }
-        });
-
-        const response = await axios.post("http://localhost:5000/articles", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-
-        alert("Article créé avec succès !");
-        navigate("/Articles");
-      } catch (error) {
-        console.error("Erreur:", error.response?.data || error.message);
-        alert("Erreur lors de la création: " + (error.response?.data?.message || error.message));
-      }
-    },
+    enableReinitialize:true,
+  // Modifiez la soumission du formulaire
+onSubmit: async (values) => {
+  try {
+    alert(JSON.stringify(values, null, 2));
+    const formData = new FormData();
     
-  });
+    // Ajout de tous les champs au FormData
+    Object.keys(values).forEach((key) => {
+      if (key === "image_article" && values[key]) {
+        formData.append(key, values[key]);
+      } else if (values[key] !== null && values[key] !== undefined) {
+        // Convertir les valeurs en string pour FormData
+        formData.append(key, String(values[key]));
+      }
+    });
+   console.log(formData)
+    if (!id) {
+      const response = await axios.post("http://localhost:5000/articles", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      alert("Article créé avec succès !");
+      navigate("/Articles");
+    } else {
+      // Ajoutez un log pour vérifier les données envoyées
+      console.log("Données envoyées:", {
+        libelleFamille: values.libelleFamille,
+        libeleCategorie: values.libeleCategorie
+      });
+
+      await axios.put(`http://localhost:5000/articles/${id}`,  values);
+      alert("Article édité avec succès !");
+      navigate("/Articles");
+    }
+  } catch (error) {
+    console.error("Erreur:", error.response?.data || error.message);
+    alert("Erreur lors de la mise à jour: " + (error.response?.data?.message || error.message));
+  }
+},
+    
+  })
   console.log("Erreurs de validation:", formik.errors); // Affiche toutes les erreurs
   useEffect(() => {
     const fetchData = async () => {
@@ -135,360 +154,376 @@ export default function CreateArticle() {
       } catch (error) {
         console.error("Erreur chargement données:", error);
       }
-    };
+    }
     fetchData();
-  }, []);
-
+    
+  }, [id]);
+ useEffect(()=>{
+    if (id) {
+    axios.get(`http://localhost:5000/articles/${id}`)
+      .then((response) => {
+        const articleData = response.data;
+        setArticle(articleData);
+        
+      
+      });
+  }
+ },[id])
   const handleFileChange = (event) => {
     formik.setFieldValue("image_article", event.currentTarget.files[0]);
   };
 
   return (
-    <>
+  <>
       <Navbar />
-      <Box height={100} />
+      <Box height={70} />
       <Box sx={{ display: "flex" }}>
         <Sidenav />
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-          <Box sx={{ 
-            position: "sticky", 
-            top: 0, 
-            zIndex: 2, 
-            bgcolor: "#fff", 
-            pb: "10px", 
-            borderBottom: "1px solid #ddd" 
-          }}>
-            <h2 className="px-3 py-3 text-2xl font-semibold">Créer un Article</h2>
-          </Box>
-
-          <form onSubmit={formik.handleSubmit}>
-            <Grid container spacing={4}>
-              
-              {/* Libelle Article */}
-              <Grid item xs={4}>
-                <TextField
-                  name="libelle"
-                  label="Libellé"
-                  fullWidth
-                  margin="normal"
-                  value={formik.values.libelle}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.libelle && Boolean(formik.errors.libelle)}
-                  helperText={formik.touched.libelle && formik.errors.libelle}
-                  size="small"
-                />
-              </Grid>
-              
-              {/* Nature */}
-              <Grid item xs={4}>
-                <TextField
-                  name="Nature"
-                  label="Nature"
-                  fullWidth
-                  margin="normal"
-                  value={formik.values.Nature}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.Nature && Boolean(formik.errors.Nature)}
-                  helperText={formik.touched.Nature && formik.errors.Nature}
+        <Box component="main" sx={{ flexGrow: 1, p: 2 }}>
+          <Paper sx={{ p: 2, mb: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              {id ? 'Éditer un Article' : 'Créer un Article'}
+            </Typography>
+            
+            <form onSubmit={formik.handleSubmit}>
+              {/* Réduire l'espacement entre les lignes à 2 */}
+              <Grid container spacing={2}>
+                
+                {/* Section Informations de base */}
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" gutterBottom sx={{ mt: 1, mb: 1, color: 'text.secondary' }}>
+                    Informations de base
+                  </Typography>
+                </Grid>
+                
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    name="libelle"
+                    label="Libellé*"
+                    fullWidth
                     size="small"
-                />
-              </Grid>
-              
-              {/* Type */}
-              <Grid item xs={4}>
-                <TextField
-                  name="type"
-                  label="Type"
-                  fullWidth
-                  margin="normal"
-                  value={formik.values.type}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.type && Boolean(formik.errors.type)}
-                  helperText={formik.touched.type && formik.errors.type}
+                    value={formik.values.libelle}
+                    onChange={formik.handleChange}
+                    error={formik.touched.libelle && Boolean(formik.errors.libelle)}
+                    helperText={formik.touched.libelle && formik.errors.libelle}
+                  />
+                </Grid>
+                
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    name="Nature"
+                    label="Nature*"
+                    fullWidth
                     size="small"
-                />
-              </Grid>
-              
-              {/* prix_brut */}
-              <Grid item xs={4}>
-                <TextField
-                  name="prix_brut"
-                  label="Prix Brut"
-                  fullWidth
-                  margin="normal"
-                  type="number"
-                  value={formik.values.prix_brut}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.prix_brut && Boolean(formik.errors.prix_brut)}
-                  helperText={formik.touched.prix_brut && formik.errors.prix_brut}
+                    value={formik.values.Nature}
+                    onChange={formik.handleChange}
+                    error={formik.touched.Nature && Boolean(formik.errors.Nature)}
+                    helperText={formik.touched.Nature && formik.errors.Nature}
+                  />
+                </Grid>
+                
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    name="type"
+                    label="Type*"
+                    fullWidth
                     size="small"
-                />
-              </Grid>
-              
-              {/* remise */}
-              <Grid item xs={4}>
-                <TextField
-                  name="remise"
-                  label="Remise %"
-                  fullWidth
-                  margin="normal"
-                  type="number"
-                  value={formik.values.remise}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.remise && Boolean(formik.errors.remise)}
-                  helperText={formik.touched.remise && formik.errors.remise}
+                    value={formik.values.type}
+                    onChange={formik.handleChange}
+                    error={formik.touched.type && Boolean(formik.errors.type)}
+                    helperText={formik.touched.type && formik.errors.type}
+                  />
+                </Grid>
+                
+                {/* Section Catégorisation */}
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" gutterBottom sx={{ mt: 2, mb: 1, color: 'text.secondary' }}>
+                    Catégorisation
+                  </Typography>
+                </Grid>
+                
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    name="libelleFamille"
+                    label="Famille*"
+                    fullWidth
                     size="small"
-                />
-              </Grid>
-              
-              {/* prix_net */}
-              <Grid item xs={4}>
-                <TextField
-                  name="prix_net"
-                  label="Prix NET"
-                  fullWidth
-                  margin="normal"
-                  type="number"
-                  value={formik.values.prix_net}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.prix_net && Boolean(formik.errors.prix_net)}
-                  helperText={formik.touched.prix_net && formik.errors.prix_net}
+                    select
+                    value={formik.values.libelleFamille}
+                    onChange={formik.handleChange}
+                    error={formik.touched.libelleFamille && Boolean(formik.errors.libelleFamille)}
+                    helperText={formik.touched.libelleFamille && formik.errors.libelleFamille}
+                  >
+                    <MenuItem value="">Sélectionnez une famille</MenuItem>
+                    {familles.map((famille) => (
+                      <MenuItem key={famille._id} value={famille._id}>
+                        {famille.designationFamille}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    name="libeleCategorie"
+                    label="Catégorie*"
+                    fullWidth
                     size="small"
-                />
-              </Grid>
-              
-              {/* marge */}
-              <Grid item xs={4}>
-                <TextField
-                  name="marge"
-                  label="Marge"
-                  fullWidth
-                  margin="normal"
-                  type="number"
-                  value={formik.values.marge}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.marge && Boolean(formik.errors.marge)}
-                  helperText={formik.touched.marge && formik.errors.marge}
+                    select
+                    value={formik.values.libeleCategorie}
+                    onChange={formik.handleChange}
+                    error={formik.touched.libeleCategorie && Boolean(formik.errors.libeleCategorie)}
+                    helperText={formik.touched.libeleCategorie && formik.errors.libeleCategorie}
+                  >
+                    <MenuItem value="">Sélectionnez une catégorie</MenuItem>
+                    {categories.map((categorie) => (
+                      <MenuItem key={categorie._id} value={categorie._id}>
+                        {categorie.designationCategorie}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                
+                {/* Section Prix */}
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" gutterBottom sx={{ mt: 2, mb: 1, color: 'text.secondary' }}>
+                    Tarification
+                  </Typography>
+                </Grid>
+                
+                <Grid item xs={12} md={3}>
+                  <TextField
+                    name="prix_brut"
+                    label="Prix Brut*"
+                    fullWidth
                     size="small"
-                />
-              </Grid>
-              
-              {/* prixht */}
-              <Grid item xs={4}>
-                <TextField
-                  name="prixht"
-                  label="Prix ht"
-                  fullWidth
-                  margin="normal"
-                  type="number"
-                  value={formik.values.prixht}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.prixht && Boolean(formik.errors.prixht)}
-                  helperText={formik.touched.prixht && formik.errors.prixht}
+                    type="number"
+                    value={formik.values.prix_brut}
+                    onChange={formik.handleChange}
+                    error={formik.touched.prix_brut && Boolean(formik.errors.prix_brut)}
+                    helperText={formik.touched.prix_brut && formik.errors.prix_brut}
+                  />
+                </Grid>
+                
+                <Grid item xs={12} md={3}>
+                  <TextField
+                    name="remise"
+                    label="Remise %*"
+                    fullWidth
                     size="small"
-                />
-              </Grid>
-              
-              {/* prix_totale_concré */}
-              <Grid item xs={4}>
-                <TextField
-                  name="prix_totale_concré"
-                  label="Prix Totale Concré"
-                  fullWidth
-                  margin="normal"
-                  type="number"
-                  value={formik.values.prix_totale_concré}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.prix_totale_concré && Boolean(formik.errors.prix_totale_concré)}
-                  helperText={formik.touched.prix_totale_concré && formik.errors.prix_totale_concré}
+                    type="number"
+                    value={formik.values.remise}
+                    onChange={formik.handleChange}
+                    error={formik.touched.remise && Boolean(formik.errors.remise)}
+                    helperText={formik.touched.remise && formik.errors.remise}
+                  />
+                </Grid>
+                
+                <Grid item xs={12} md={3}>
+                  <TextField
+                    name="prix_net"
+                    label="Prix NET*"
+                    fullWidth
                     size="small"
-                />
-              </Grid>
-              
-              {/* gestion_configuration */}
-              <Grid item xs={4}>
-                <TextField
-                  name="gestion_configuration"
-                  label="gestion_configuration"
-                  fullWidth
-                  margin="normal"
-                  value={formik.values.gestion_configuration}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.gestion_configuration && Boolean(formik.errors.gestion_configuration)}
-                  helperText={formik.touched.gestion_configuration && formik.errors.gestion_configuration}
+                    type="number"
+                    value={formik.values.prix_net}
+                    onChange={formik.handleChange}
+                    error={formik.touched.prix_net && Boolean(formik.errors.prix_net)}
+                    helperText={formik.touched.prix_net && formik.errors.prix_net}
+                  />
+                </Grid>
+                
+                <Grid item xs={12} md={3}>
+                  <TextField
+                    name="marge"
+                    label="Marge*"
+                    fullWidth
                     size="small"
-                />
-              </Grid>
-              
-              {/* Famille dropdown */}
-              <Grid item xs={4}>
-                <TextField
-                  name="libelleFamille"
-                  label="Famille de l'article"
-                  fullWidth
-                  margin="normal"
-                  value={formik.values.libelleFamille}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.libelleFamille && Boolean(formik.errors.libelleFamille)}
-                  helperText={formik.touched.libelleFamille && formik.errors.libelleFamille}
-                  select
-                  SelectProps={{ displayEmpty: true }}
+                    type="number"
+                    value={formik.values.marge}
+                    onChange={formik.handleChange}
+                    error={formik.touched.marge && Boolean(formik.errors.marge)}
+                    helperText={formik.touched.marge && formik.errors.marge}
+                  />
+                </Grid>
+                
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    name="prixht"
+                    label="Prix HT*"
+                    fullWidth
                     size="small"
-                >
-                  <MenuItem value="" disabled>Sélectionnez une famille</MenuItem>
-                  {familles.map((famille) => (
-                    <MenuItem key={famille._id} value={famille._id}>
-                      {famille.designationFamille}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              
-              {/* Catégorie dropdown */}
-              <Grid item xs={4}>
-                <TextField
-                  name="libeleCategorie"
-                  label="Catégorie de l'article"
-                  fullWidth
-                  margin="normal"
-                  value={formik.values.libeleCategorie}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.libeleCategorie && Boolean(formik.errors.libeleCategorie)}
-                  helperText={formik.touched.libeleCategorie && formik.errors.libeleCategorie}
-                  select
-                  SelectProps={{ displayEmpty: true }}
+                    type="number"
+                    value={formik.values.prixht}
+                    onChange={formik.handleChange}
+                    error={formik.touched.prixht && Boolean(formik.errors.prixht)}
+                    helperText={formik.touched.prixht && formik.errors.prixht}
+                  />
+                </Grid>
+                
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    name="tva"
+                    label="TVA %*"
+                    fullWidth
                     size="small"
-                >
-                  <MenuItem value="" disabled>Sélectionnez une catégorie</MenuItem>
-                  {categories.map((categorie) => (
-                    <MenuItem key={categorie._id} value={categorie._id}>
-                      {categorie.designationCategorie}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              
-              {/* Fournisseur dropdown */}
-              <Grid item xs={4}>
-                <TextField
-                  name="lib_fournisseur"
-                  label="Fournisseur"
-                  fullWidth
-                  margin="normal"
-                  value={formik.values.lib_fournisseur}
-                  onChange={formik.handleChange}
-                  select
-                  SelectProps={{ displayEmpty: true }}
+                    type="number"
+                    value={formik.values.tva}
+                    onChange={formik.handleChange}
+                    error={formik.touched.tva && Boolean(formik.errors.tva)}
+                    helperText={formik.touched.tva && formik.errors.tva}
+                  />
+                </Grid>
+                
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    name="prix_totale_concré"
+                    label="Prix Total*"
+                    fullWidth
                     size="small"
-                >
-                  <MenuItem value="">Aucun fournisseur</MenuItem>
-                  {fournisseurs.map((fournisseur) => (
-                    <MenuItem key={fournisseur._id} value={fournisseur._id}>
-                      {fournisseur.raison_sociale}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Grid>
-              
-              {/* Nombre_unite */}
-              <Grid item xs={4}>
-                <TextField
-                  name="Nombre_unite"
-                  label="Nombre d'unités"
-                  fullWidth
-                  margin="normal"
-                  type="number"
-                  value={formik.values.Nombre_unite}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.Nombre_unite && Boolean(formik.errors.Nombre_unite)}
-                  helperText={formik.touched.Nombre_unite && formik.errors.Nombre_unite}
+                    type="number"
+                    value={formik.values.prix_totale_concré}
+                    onChange={formik.handleChange}
+                    error={formik.touched.prix_totale_concré && Boolean(formik.errors.prix_totale_concré)}
+                    helperText={formik.touched.prix_totale_concré && formik.errors.prix_totale_concré}
+                  />
+                </Grid>
+                
+                {/* Section Fournisseur et Stock */}
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" gutterBottom sx={{ mt: 2, mb: 1, color: 'text.secondary' }}>
+                    Fournisseur et Stock
+                  </Typography>
+                </Grid>
+                
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    name="lib_fournisseur"
+                    label="Fournisseur"
+                    fullWidth
                     size="small"
-                />
-              </Grid>
-              
-              {/* prixmin */}
-              <Grid item xs={4}>
-                <TextField
-                  name="prixmin"
-                  label="Prix Min"
-                  fullWidth
-                  margin="normal"
-                  type="number"
-                  value={formik.values.prixmin}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.prixmin && Boolean(formik.errors.prixmin)}
-                  helperText={formik.touched.prixmin && formik.errors.prixmin}
+                    select
+                    value={formik.values.lib_fournisseur}
+                    onChange={formik.handleChange}
+                  >
+                    <MenuItem value="">Aucun fournisseur</MenuItem>
+                    {fournisseurs.map((fournisseur) => (
+                      <MenuItem key={fournisseur._id} value={fournisseur._id}>
+                        {fournisseur.raison_sociale}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    name="Nombre_unite"
+                    label="Nombre d'unités*"
+                    fullWidth
                     size="small"
-                />
-              </Grid>
-              
-              {/* prixmax */}
-              <Grid item xs={4}>
-                <TextField
-                  name="prixmax"
-                  label="Prix Max"
-                  fullWidth
-                  margin="normal"
-                  type="number"
-                  value={formik.values.prixmax}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.prixmax && Boolean(formik.errors.prixmax)}
-                  helperText={formik.touched.prixmax && formik.errors.prixmax}
+                    type="number"
+                    value={formik.values.Nombre_unite}
+                    onChange={formik.handleChange}
+                    error={formik.touched.Nombre_unite && Boolean(formik.errors.Nombre_unite)}
+                    helperText={formik.touched.Nombre_unite && formik.errors.Nombre_unite}
+                  />
+                </Grid>
+                
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    name="movement_article"
+                    label="Mouvement*"
+                    fullWidth
                     size="small"
-                />
-              </Grid>
-              
-              {/* tva_achat */}
-              <Grid item xs={4}>
-                <TextField
-                  name="tva_achat"
-                  label="Tva Achat"
-                  fullWidth
-                  margin="normal"
-                  type="number"
-                  value={formik.values.tva_achat}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.tva_achat && Boolean(formik.errors.tva_achat)}
-                  helperText={formik.touched.tva_achat && formik.errors.tva_achat}
-                    size="small"
-                />
-              </Grid>
-              
-              {/* tva */}
-              <Grid item xs={4}>
-                <TextField
-                  name="tva"
-                  label="TVA"
-                  fullWidth
-                  margin="normal"
-                  type="number"
-                  value={formik.values.tva}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.tva && Boolean(formik.errors.tva)}
-                  helperText={formik.touched.tva && formik.errors.tva}
-                    size="small"
-                />
-              </Grid>
-              
-              {/* configuration */}
-              <Grid item xs={4}>
+                    value={formik.values.movement_article}
+                    onChange={formik.handleChange}
+                    error={formik.touched.movement_article && Boolean(formik.errors.movement_article)}
+                    helperText={formik.touched.movement_article && formik.errors.movement_article}
+                  />
+                </Grid>
+                
+                {/* Section Options */}
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" gutterBottom sx={{ mt: 2, mb: 1, color: 'text.secondary' }}>
+                    Options
+                  </Typography>
+                </Grid>
+                
+                <Grid item xs={12} md={6}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        name="serie"
+                        checked={formik.values.serie}
+                        onChange={formik.handleChange}
+                        size="small"
+                      />
+                    }
+                    label="Gestion par série"
+                  />
+                </Grid>
+                
+                <Grid item xs={12} md={6}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        name="dimension_article"
+                        checked={formik.values.dimension_article}
+                        onChange={formik.handleChange}
+                        size="small"
+                      />
+                    }
+                    label="Avec dimensions"
+                  />
+                </Grid>
+                
+                {/* Dimensions conditionnelles */}
+                {formik.values.dimension_article && (
+                  <>
+                    <Grid item xs={12} md={4}>
+                      <TextField
+                        name="longueur"
+                        label="Longueur"
+                        fullWidth
+                        size="small"
+                        type="number"
+                        value={formik.values.longueur}
+                        onChange={formik.handleChange}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <TextField
+                        name="largeur"
+                        label="Largeur"
+                        fullWidth
+                        size="small"
+                        type="number"
+                        value={formik.values.largeur}
+                        onChange={formik.handleChange}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <TextField
+                        name="hauteur"
+                        label="Hauteur"
+                        fullWidth
+                        size="small"
+                        type="number"
+                        value={formik.values.hauteur}
+                        onChange={formik.handleChange}
+                      />
+                    </Grid>
+                  </>
+                )}
+                
+                {/* Section Configuration et Image */}
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" gutterBottom sx={{ mt: 2, mb: 1, color: 'text.secondary' }}>
+                    Configuration
+                  </Typography>
+                </Grid>
+                
+               <Grid item xs={4}>
                 <TextareaAutosize
                   name="configuration"
                   placeholder="Configuration"
@@ -504,122 +539,24 @@ export default function CreateArticle() {
                   <FormHelperText error>{formik.errors.configuration}</FormHelperText>
                 )}
               </Grid>
-              
-              {/* movement_article */}
-              <Grid item xs={4}>
-                <TextField
-                  name="movement_article"
-                  label="Movement Article"
-                  fullWidth
-                  margin="normal"
-                  value={formik.values.movement_article}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  error={formik.touched.movement_article && Boolean(formik.errors.movement_article)}
-                  helperText={formik.touched.movement_article && formik.errors.movement_article}
+                
+                <Grid item xs={12} md={4}>
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    fullWidth
                     size="small"
-                />
-              </Grid>
-              
-              {/* Serie checkbox */}
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      name="serie"
-                      checked={formik.values.serie}
-                      onChange={formik.handleChange}
-                        size="small"
+                    sx={{ mb: 1 }}
+                  >
+                    Choisir une image
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={handleFileChange}
                     />
-                  }
-                  label="Série"
-                />
-              </Grid>
-              
-              {/* Dimension checkbox */}
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      name="dimension_article"
-                      checked={formik.values.dimension_article}
-                      onChange={formik.handleChange}
-                        size="small"
-                    />
-                  }
-                  label="Avec dimensions"
-                />
-              </Grid>
-              
-              {/* Conditional dimension fields */}
-              {formik.values.dimension_article && (
-                <>
-                  <Grid item xs={4}>
-                    <TextField
-                      name="longueur"
-                      label="Longueur"
-                      fullWidth
-                      margin="normal"
-                      type="number"
-                      value={formik.values.longueur}
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      error={formik.touched.longueur && Boolean(formik.errors.longueur)}
-                      helperText={formik.touched.longueur && formik.errors.longueur}
-                        size="small"
-                    />
-                  </Grid>
-                  <Grid item xs={4}>
-                    <TextField
-                      name="largeur"
-                      label="Largeur"
-                      fullWidth
-                      margin="normal"
-                      type="number"
-                      value={formik.values.largeur}
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      error={formik.touched.largeur && Boolean(formik.errors.largeur)}
-                      helperText={formik.touched.largeur && formik.errors.largeur}
-                        size="small"
-                    />
-                  </Grid>
-                  <Grid item xs={4}>
-                    <TextField
-                      name="hauteur"
-                      label="Hauteur"
-                      fullWidth
-                      margin="normal"
-                      type="number"
-                      value={formik.values.hauteur}
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      error={formik.touched.hauteur && Boolean(formik.errors.hauteur)}
-                      helperText={formik.touched.hauteur && formik.errors.hauteur}
-                        size="small"
-                    />
-                  </Grid>
-                </>
-              )}
-              
-              {/* Image upload */}
-              <Grid item xs={4}>
-                <Button
-                  variant="contained"
-                  component="label"
-                  color="primary"
-                  sx={{ textTransform: "none" }}
-                >
-                  Choisir une image
-                  <input
-                    type="file"
-                    hidden
-                    accept="image/*"
-                    onChange={handleFileChange}
-                  />
-                </Button>
-                {formik.values.image_article && (
-                  <Box mt={2}>
+                  </Button>
+                  {formik.values.image_article && !id && (
                     <img
                       src={
                         typeof formik.values.image_article === "string"
@@ -628,31 +565,41 @@ export default function CreateArticle() {
                       }
                       alt="Aperçu"
                       style={{
-                        width: "100px",
-                        height: "100px",
-                        objectFit: "cover",
-                        borderRadius: "8px",
+                        width: "100%",
+                        maxHeight: "150px",
+                        objectFit: "contain",
+                        borderRadius: "4px",
                       }}
                     />
+                  )}
+                </Grid>
+                
+                {/* Bouton de soumission */}
+                <Grid item xs={12} sx={{ mt: 2 }}>
+                  <Box display="flex" justifyContent="flex-end">
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      color="primary"
+                      size="medium"
+                    >
+                      {id ? 'Mettre à jour' : 'Créer'}
+                    </Button>
                   </Box>
-                )}
+                </Grid>
               </Grid>
-              
-              {/* Submit button */}
-              <Grid item xs={12}>
-                <Button
-                  type="submit"
-                  color="primary"
-                  variant="contained"
-                  style={{ marginTop: "20px", float: "right" }}
-                >
-                  Créer
-                </Button>
-              </Grid>
-            </Grid>
-          </form>
+            </form>
+          </Paper>
         </Box>
       </Box>
     </>
   );
 }
+
+
+
+
+
+
+
+  

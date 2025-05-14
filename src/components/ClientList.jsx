@@ -22,6 +22,7 @@ import { Delete, Edit, Add, Visibility, FilterList } from '@mui/icons-material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { getAllClients } from '../functions/client/clientApi';
+import SearchBar from './SearchBar';
 
 const ClientList = () => {
   const [clients, setClients] = useState([]);
@@ -94,7 +95,8 @@ const ClientList = () => {
       setPage(page - 1);
     }
   };
-
+  const [searchQuery, setSearchQuery] = useState("");
+  
   return (
     <div className='client-screen'>
     <Container maxWidth="lg" style={{ padding: '20px', width: '100%' }}>
@@ -102,7 +104,7 @@ const ClientList = () => {
         <Typography variant="h4" style={{ fontWeight: 'bold', color: '#1976d2', fontSize: '2rem' }}>
           Liste des Clients
         </Typography>
-        <div>
+        <div className='flex items-center'> 
           <Button
             variant="contained"
             color="primary"
@@ -113,24 +115,17 @@ const ClientList = () => {
           >
             Ajouter un client
           </Button>
-          <IconButton
-            onClick={handleFilterClick}
-            color="primary"
-            aria-label="filtrer"
-            style={{ backgroundColor: '#1976d2', color: 'white', fontSize: '1.5rem' }}
-          >
-            <FilterList style={{ fontSize: '1.5rem' }} />
-          </IconButton>
+     <div className='w-[60%]'> <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} setClients={setClients} /></div>
         </div>
       </div>
 
-      <Paper elevation={3} style={{ borderRadius: '10px', overflow: 'hidden', width: '100%' }}>
+      <Paper elevation={3} style={{ borderRadius: '10px', overflow: 'hidden', width: '100%',marginTop:'20px'  }}>
         {loading ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
             <CircularProgress size={50} />
           </div>
         ) : (
-          <Table  style={{ width: '100%' }}>
+          <Table  style={{ width: '100%'}}>
             <TableHead style={{ backgroundColor: '#f5f5f5' }}>
               <TableRow>
                 {['Nom & Prénom', 'Téléphone', 'Code', 'Raison Sociale', 'Actions'].map((header, index) => (
@@ -187,61 +182,7 @@ const ClientList = () => {
         )}
       </Paper>
 
-      <Menu
-        anchorEl={filterAnchorEl}
-        open={openFilterMenu}
-        onClose={handleFilterClose}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-      >
-        <Paper style={{ padding: '20px', width: '300px', borderRadius: '10px' }}>
-          <Typography variant="h6" style={{ marginBottom: '10px', color: '#1976d2', fontSize: '1.2rem' }}>
-            Filtres
-          </Typography>
-          <TextField
-            name="nom_prenom"
-            label="Nom & Prénom"
-            value={filters.nom_prenom || ''}
-            onChange={handleFilterChange}
-            fullWidth
-            margin="normal"
-            variant="outlined"
-            size="medium"
-            style={{ fontSize: '1.1rem' }}
-          />
-          <TextField
-            name="code"
-            label="Code"
-            value={filters.code || ''}
-            onChange={handleFilterChange}
-            fullWidth
-            margin="normal"
-            variant="outlined"
-            size="medium"
-            style={{ fontSize: '1.1rem' }}
-          />
-          <TextField
-            name="raison_social"
-            label="Raison Sociale"
-            value={filters.raison_social || ''}
-            onChange={handleFilterChange}
-            fullWidth
-            margin="normal"
-            variant="outlined"
-            size="medium"
-            style={{ fontSize: '1.1rem' }}
-          />
-          <Button
-            onClick={applyFilters}
-            variant="contained"
-            color="primary"
-            fullWidth
-            style={{ marginTop: '10px', borderRadius: '20px', fontSize: '1rem', padding: '10px 20px' }}
-          >
-            Appliquer
-          </Button>
-        </Paper>
-      </Menu>
+      
 
       {/* Pagination */}
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>

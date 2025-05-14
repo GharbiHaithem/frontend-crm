@@ -27,7 +27,9 @@ import {
   Dialog,
   Typography,
   Menu,
+ 
 } from "@mui/material";
+import CircularProgress from '@mui/material/CircularProgress';
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -39,6 +41,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import ProgressBarPending from "./ProgressBarPending/ProgressBarPending";
 
 const DocumentConsulter = ({ typeDocument }) => {
   const [documents, setDocuments] = useState([]);
@@ -61,8 +64,8 @@ const DocumentConsulter = ({ typeDocument }) => {
   };
   // Charger les documents depuis le backend
   useEffect(() => {
-    const endpoint = typeDocument === "Facture" 
-      ? 'http://localhost:5000/facture/all' 
+    const endpoint = typeDocument === "Facture"
+      ? 'http://localhost:5000/facture/all'
       : `http://localhost:5000/entetes?type=${typeDocument}`;
 
     axios.get(endpoint)
@@ -80,12 +83,12 @@ const DocumentConsulter = ({ typeDocument }) => {
   // Filtrage des documents
   const filteredDocuments = useMemo(() => {
     if (!documents || !Array.isArray(documents)) return [];
-    
+
     return documents.filter(doc => {
-      const docNum = typeDocument === "Facture" 
-        ? doc.numFacture 
+      const docNum = typeDocument === "Facture"
+        ? doc.numFacture
         : doc.numero;
-      
+
       return docNum?.toLowerCase().includes(searchTerm.toLowerCase());
     });
   }, [documents, searchTerm, typeDocument]);
@@ -97,7 +100,7 @@ const DocumentConsulter = ({ typeDocument }) => {
       currentPage * itemsPerPage
     );
   }, [filteredDocuments, currentPage, itemsPerPage]);
-console.log(documents)
+  console.log(documents)
   // Générer un nouveau document
   const handleGeneration = () => {
     if (!selectedDocument) return;
@@ -110,7 +113,7 @@ console.log(documents)
         typeAchat === "Bon Commande" ? "BC" : "BL"
       ),
       date: selectedDocument.date,
-      client: selectedDocument?.client?.nom_prenom,
+      client: selectedDocument?.client,
       totalHT: selectedDocument.totalHT,
       totalTTC: selectedDocument.totalTTC,
       lignes: selectedDocument.lignes || [],
@@ -119,7 +122,7 @@ console.log(documents)
       typePaiement: selectedDocument.typePaiement || "",
       commentaire: selectedDocument.commentaire || "",
     };
-    
+
     navigate(`/${typeAchat.toLowerCase().replace(" ", "-")}`, {
       state: documentData,
     });
@@ -151,7 +154,7 @@ console.log(documents)
         const endpoint = typeDocument === "Facture"
           ? `http://localhost:5000/facture/${id}`
           : `http://localhost:5000/entetes/${id}`;
-          
+
         axios.delete(endpoint)
           .then(() => {
             setDocuments(documents.filter((doc) => doc._id !== id));
@@ -175,7 +178,7 @@ console.log(documents)
 
     // Formater la date
     const dateFormatee = new Date(document.date).toLocaleDateString();
-    
+
     // Informations client
     const clientInfo = typeDocument === "Facture"
       ? document.client?.nom_prenom
@@ -192,7 +195,7 @@ console.log(documents)
     doc.text(`Numéro: ${typeDocument === "Facture" ? document.numFacture : document.numero}`, 15, 30);
     doc.text(`Date: ${dateFormatee}`, 15, 40);
     doc.text(`Client: ${clientInfo}`, 15, 50);
-    
+
     if (typeDocument !== "Facture") {
       doc.text(`Réf. BCC: ${document.referenceCommande || ''}`, 15, 60);
       doc.text(`Point de Vente: ${document.pointVente || ''}`, 15, 70);
@@ -277,7 +280,46 @@ console.log(documents)
       setCurrentPage(currentPage - 1);
     }
   };
+  console.log(typeDocument)
+  const handleSearch = async (value) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/facture/search?query=${value}`);
+      console.log(response.data);
+      setDocuments(response.data)
+    } catch (error) {
+      console.error("Erreur de recherche:", error.response?.data || error.message);
+    }
+  };
+  const handleChange = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
 
+    // Utilisez un debounce au lieu de setTimeout
+    const timer = setTimeout(() => {
+      if (value.trim().length > 0) {
+        handleSearch(value);
+      }
+    }, 500); // Réduisez à 500ms
+
+    return () => clearTimeout(timer);
+  };
+  const[startGeneration,setStartGeneration] = useState(false)
+  const generateFacture =async(document)=>{
+    setStartGeneration(true)
+    console.log(document)
+      setTimeout(async () => {
+              await axios
+                .post("http://localhost:5000/facture/create", document)
+                .then((res) => {
+                  console.log(res);
+                });
+            }, 1000);
+         await  axios.delete( `http://localhost:5000/entetes/${document._id}`)
+         setTimeout(()=>{
+          navigate('/factures')
+         },1000)
+  }
+    console.log(startGeneration)
   return (
     <>
       <Navbar />
@@ -285,35 +327,36 @@ console.log(documents)
         <Sidenav />
         <Box component="main" sx={{ flexGrow: 1, p: 3, paddingTop: "50px" }}>
           <h1>Consultation {typeDocument}</h1>
-         <div className="flex items-center gap-5">
-         <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            onClick={() => navigate(`/${typeDocument.toLowerCase()}/ajouter`)}
-          >
-            Ajouter
-          </Button>
-             <IconButton
-                      onClick={handleClick} 
-                          color="primary"
-                          aria-label="filtrer"
-                          style={{
-                            backgroundColor: "#1976d2",
-                            color: "white",
-                            fontSize: "1.5rem",
-                          }}
-                        >
-                          <FilterList style={{ fontSize: "1.5rem" }} />
-                        </IconButton>
-         </div>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2, my: 2 }}>
+          {typeDocument !== 'Facture' && <div className="flex items-center gap-5">
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={() => navigate(`/${typeDocument.toLowerCase()}/ajouter`)}
+            >
+              Ajouter
+            </Button>
+            <IconButton
+              onClick={handleClick}
+              color="primary"
+              aria-label="filtrer"
+              style={{
+                backgroundColor: "#1976d2",
+                color: "white",
+                fontSize: "1.5rem",
+              }}
+            >
+              <FilterList style={{ fontSize: "1.5rem" }} />
+            </IconButton>
+          </div>}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, my: 2, width: 1 }}>
             <TextField
               label="Rechercher par numéro"
               variant="outlined"
               size="small"
+              fullWidth
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleChange}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -323,7 +366,7 @@ console.log(documents)
               }}
             />
           </Box>
-          
+
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
@@ -344,9 +387,9 @@ console.log(documents)
                       {new Date(doc.date).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
-                   
-                      {typeDocument === "Facture" 
-                        ? doc?.client?.nom_prenom 
+
+                      {typeDocument === "Facture"
+                        ? doc?.client?.nom_prenom
                         : doc.client?.raison_social}
                     </TableCell>
                     <TableCell>{(doc.totalHT || 0).toFixed(2)}</TableCell>
@@ -381,8 +424,14 @@ console.log(documents)
                           color="primary"
                           onClick={() => {
                             setSelectedDocument(doc);
-                            setOpenModal(true);
-                          }}
+                            if (typeDocument !== "Bon Commande" && typeDocument !== "Bon Livraison") {
+                              setOpenModal(true);
+                            }else{
+                              generateFacture(doc)
+                            }
+
+                          }
+                          }
                         >
                           Générer
                         </Button>
@@ -393,7 +442,7 @@ console.log(documents)
               </TableBody>
             </Table>
           </TableContainer>
-          
+
           {/* Pagination */}
           <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
             <IconButton
@@ -417,7 +466,7 @@ console.log(documents)
               <ArrowForwardIcon />
             </IconButton>
           </Box>
-          
+
           {/* Modal pour la génération de document */}
           <Dialog open={openModal} onClose={() => setOpenModal(false)}>
             <DialogTitle>Choisir le type de document</DialogTitle>
@@ -440,61 +489,62 @@ console.log(documents)
               </Button>
             </DialogActions>
           </Dialog>
-               <Menu
-                      anchorEl={anchorEl}
-                      open={open}
-                      onClose={handleClose}
-                      anchorOrigin={{ vertical: "top", horizontal: "right" }}
-                      transformOrigin={{ vertical: "top", horizontal: "left" }}
-                    >
-                      <Paper
-                        style={{ padding: "20px", width: "300px", borderRadius: "10px" }}
-                      >
-                        <Typography
-                          variant="h6"
-                          style={{
-                            marginBottom: "10px",
-                            color: "#1976d2",
-                            fontSize: "1.2rem",
-                          }}
-                        >
-                          Filtres
-                        </Typography>
-                        <TextField
-                          name="client"
-                          label="Client"
-                         
-                          fullWidth
-                          margin="normal"
-                          variant="outlined"
-                          size="small"
-                          style={{ fontSize: "1.1rem" }}
-                        />
-                  
-                  <DatePicker
-      label="Sélectionnez une date"
-      value={date}
-      onChange={(newDate) => setDate(newDate)}
-      format="dd/MM/yyyy" // Format français
-    />
+          <Menu
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleClose}
+            anchorOrigin={{ vertical: "top", horizontal: "right" }}
+            transformOrigin={{ vertical: "top", horizontal: "left" }}
+          >
+            <Paper
+              style={{ padding: "20px", width: "300px", borderRadius: "10px" }}
+            >
+              <Typography
+                variant="h6"
+                style={{
+                  marginBottom: "10px",
+                  color: "#1976d2",
+                  fontSize: "1.2rem",
+                }}
+              >
+                Filtres
+              </Typography>
+              <TextField
+                name="client"
+                label="Client"
 
-                        <Button
-                   
-                          variant="contained"
-                          color="primary"
-                          fullWidth
-                          style={{
-                            marginTop: "10px",
-                            borderRadius: "20px",
-                            fontSize: "1rem",
-                            padding: "10px 20px",
-                          }}
-                        >
-                          Appliquer
-                        </Button>
-                      </Paper>
-                    </Menu>
+                fullWidth
+                margin="normal"
+                variant="outlined"
+                size="small"
+                style={{ fontSize: "1.1rem" }}
+              />
+
+              <DatePicker
+                label="Sélectionnez une date"
+                value={date}
+                onChange={(newDate) => setDate(newDate)}
+                format="dd/MM/yyyy" // Format français
+              />
+
+              <Button
+
+                variant="contained"
+                color="primary"
+                fullWidth
+                style={{
+                  marginTop: "10px",
+                  borderRadius: "20px",
+                  fontSize: "1rem",
+                  padding: "10px 20px",
+                }}
+              >
+                Appliquer
+              </Button>
+            </Paper>
+          </Menu>
         </Box>
+      {startGeneration && <ProgressBarPending   setStartGeneration={setStartGeneration} />}
       </Box>
     </>
   );

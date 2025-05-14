@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import { authService } from "../services/api";
 import { useAppStore } from "../appStore";
-
+import {useAuth} from '../contexts/AuthContext'
 function Login() {
   const [loginInfo, setLoginInfo] = useState({
     email: "",
@@ -11,7 +11,7 @@ function Login() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-
+ const {connected} =useAuth()
   const setLoading = useAppStore((state) => state.setLoading);
   const navigate = useNavigate();
 
@@ -49,10 +49,10 @@ function Login() {
         localStorage.setItem("loggedInUser", name);
         localStorage.setItem("user", JSON.stringify(user));
 
-        // Redirect after a short delay to allow toast to be seen
-        setTimeout(() => {
-          navigate("/home");
-        }, 2000);
+        console.log("connected")
+     navigate('/home')
+      
+        
       }
     } catch (err) {
       const errorMessage =
@@ -64,7 +64,10 @@ function Login() {
       setLoading(false);
     }
   };
+  useEffect(()=>{
+    console.log(connected)
 
+  },[])
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">

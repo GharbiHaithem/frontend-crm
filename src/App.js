@@ -26,6 +26,7 @@ import BonLivraisonPage from "./pages/BonLivraision";
 import FactureForm from "./pages/FactureForm";
 import DocumentDetails from "./components/DocumentDetails";
 import DocumentEdit from "./components/DocumentEdit";
+import EditProfi from "./components/EditProfi";
 import ClientPage from "./pages/ClientPage";
 import EventCalendar from "./components/calendar/EventCalendar";
 import Login from "./pages/Login";
@@ -35,6 +36,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import Payement from "./components/Payement";
 import PaymentSuccess from "./pages/PayementSuccess";
+import DetailsClient from "./pages/DetailsClient";
+import DetailsArticle from "./components/DetailsArticle/DetailsArticle";
 // Protected route component
 const ProtectedRoute = ({ children }) => {
   const { currentUser, loading } = useAuth();
@@ -110,6 +113,16 @@ function App() {
               </ProtectedRoute>
             }
           />
+  <Route
+            path="/clients/details/:id"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <DetailsClient />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path="/clients/new"
@@ -121,7 +134,16 @@ function App() {
               </ProtectedRoute>
             }
           />
-
+  <Route
+            path="/article/details/:id"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <DetailsArticle />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/clients/:id"
             element={
@@ -176,7 +198,17 @@ function App() {
               </ProtectedRoute>
             }
           />
-
+            
+     <Route
+            path="/Article/update/:id"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <CreateArticle />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/categorieArticle"
             element={
@@ -253,7 +285,7 @@ function App() {
           />
 
           <Route
-            path="/BonCommande"
+            path="/bon-commande"
             element={
               <ProtectedRoute>
                 <DashboardLayout>

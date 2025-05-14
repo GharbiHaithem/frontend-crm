@@ -31,7 +31,7 @@ const BonCommandePage = () => {
     commentaire,
   } = location.state;
   // console.log("--------------------------------");
-  // console.log(location.state);
+   console.log(location.state);
   const genererFacture = () => {
     const data = {
       typeDocument,
@@ -152,7 +152,7 @@ const BonCommandePage = () => {
       <Box height={30} />
       <Box sx={{ display: "flex" }}>
         <Sidenav />
-        <Box component="main" sx={{ flexGrow: 1, p: 3, paddingTop: "350px" }}>
+        <Box component="main" sx={{ flexGrow: 1, p: 3, paddingTop: "10px" }}>
           <h1>Bon de Commande</h1>
           <div className="document-form">
             <Box
@@ -217,7 +217,7 @@ const BonCommandePage = () => {
                   type="date"
                   fullWidth
                   margin="normal"
-                  value={date}
+                  value={new Date(date).toLocaleDateString('fr-CA')}
                   InputLabelProps={{ shrink: true }}
                   size="small"
                   disabled

@@ -119,17 +119,8 @@ const DocumentForm = ({ typeDocument }) => {
         );
         setId(response.data._id);
         setEnregistrementReussi(true);
-       if(typeDocument==="Devis") {
-        return
-       }else{
-        setTimeout(async () => {
-          await axios
-            .post("http://localhost:5000/facture/create", documentData)
-            .then((res) => {
-              console.log(res);
-            });
-        }, 1000);
-       }
+     
+      
        
       } catch (error) {
         console.error("Erreur lors de l'enregistrement", error);
