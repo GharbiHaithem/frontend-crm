@@ -29,7 +29,7 @@ export default function CreateFamilleArticle() {
     validationSchema,
     onSubmit: async (values) => {
       try {
-     alert(`Valeurs à envoyer :\n${JSON.stringify(values, null, 2)}`);
+  
         await axios.post("http://localhost:5000/famille", values);
         alert("Famille Article créée avec succès !");
         formik.resetForm();

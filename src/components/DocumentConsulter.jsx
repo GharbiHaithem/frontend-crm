@@ -289,6 +289,7 @@ const DocumentConsulter = ({ typeDocument }) => {
     } catch (error) {
       console.error("Erreur de recherche:", error.response?.data || error.message);
     }
+    console.log(document)
   };
   const handleChange = (e) => {
     const value = e.target.value;
@@ -320,6 +321,28 @@ const DocumentConsulter = ({ typeDocument }) => {
          },1000)
   }
     console.log(startGeneration)
+    const[code,setCode] = useState(null)
+const handleFilter = async () => {
+  let url = `http://localhost:5000/entetes/searchFilter?typeDocument=${encodeURIComponent(typeDocument)}`;
+
+  if (code) {
+    url += `&code=${encodeURIComponent(code)}`;
+  }
+
+if (date) {
+  const formattedDate = new Date(date).toLocaleDateString('en-CA'); // "2024-05-22"
+  url += `&date=${encodeURIComponent(formattedDate)}`;
+}
+
+  try {
+    const res = await fetch(url);
+    const result = await res.json();
+    setDocuments(result);
+  } catch (error) {
+    console.error("Erreur lors du filtrage :", error);
+  }
+};
+
   return (
     <>
       <Navbar />
@@ -512,7 +535,8 @@ const DocumentConsulter = ({ typeDocument }) => {
               <TextField
                 name="client"
                 label="Client"
-
+                  value={code}
+                  onChange={(e)=>setCode(e.target.value)}
                 fullWidth
                 margin="normal"
                 variant="outlined"
@@ -528,7 +552,7 @@ const DocumentConsulter = ({ typeDocument }) => {
               />
 
               <Button
-
+                onClick={handleFilter}
                 variant="contained"
                 color="primary"
                 fullWidth

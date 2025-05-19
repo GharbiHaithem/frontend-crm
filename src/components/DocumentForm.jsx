@@ -21,6 +21,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "@mui/material";
+import Swal from "sweetalert2";
 
 const validationSchema = Yup.object().shape({
   numero: Yup.string().required("Le numéro est obligatoire"),
@@ -119,8 +120,16 @@ const DocumentForm = ({ typeDocument }) => {
         );
         setId(response.data._id);
         setEnregistrementReussi(true);
-     
-      
+        
+      setTimeout(()=>{
+        console.log("Typpe Loading")
+          if(typeDocument==="Devis"){
+             console.log("Typpe Devis")
+                 Swal.fire("Enregistré !", "Le Devis a été Ajouter avec succees.", "success");
+       
+        }
+      },2000)
+         navigate('/devis-consulter')
        
       } catch (error) {
         console.error("Erreur lors de l'enregistrement", error);
@@ -268,6 +277,14 @@ const DocumentForm = ({ typeDocument }) => {
 
     handleCloseModal();
   };
+const [message, setMessage] = useState({
+  success: '',
+  err: ''
+});
+const [numEntete, setNumEntete] = useState({
+  success: '',
+  err: ''
+});
 
   const fetchClientByCode = (code) => {
     axios
@@ -292,7 +309,11 @@ const DocumentForm = ({ typeDocument }) => {
         formik.setFieldValue("client", "");
       });
   };
+  const handleVerifyCode= async(code) =>{
+    console.log(code)
+    await axios.post('http://localhost:5000/clients/verifyCode',{code}).then((response)=>setMessage({success:response.data.message,err:""})).catch((erreur)=>setMessage({success:'',err:erreur.response.data.message}))
 
+  }
   const fetchArticleByCode = (code, index) => {
     axios
       .get(`http://localhost:5000/articles/code/${code}`)
@@ -334,7 +355,11 @@ const DocumentForm = ({ typeDocument }) => {
         calculerTotal(nouvellesLignes);
       });
   };
-
+const handelnumeroEntete=async(num)=>{
+console.log(num)
+formik.setFieldValue('numero',num)
+await axios.post(`http://localhost:5000/entetes/verifyNumero`,{numero:num}).then((result)=>setNumEntete({success:result.data.message,err:""})).catch((erreur)=>setNumEntete({success:"",err:erreur.response.data.message}))
+}
   return (
     <>
       <Navbar />
@@ -352,28 +377,64 @@ const DocumentForm = ({ typeDocument }) => {
                 <Typography variant="h6" gutterBottom>
                   Client
                 </Typography>
-                <TextField
-                  label="Code"
-                  name="clientDetails.code"
-                  fullWidth
-                  margin="normal"
-                  size="small"
-                  value={formik.values.clientDetails.code}
-                  onChange={(e) => {
-                    formik.handleChange(e);
-                    if (e.target.value.length > 0) {
-                      fetchClientByCode(e.target.value);
-                    }
-                  }}
-                  error={
-                    formik.touched.clientDetails?.code &&
-                    Boolean(formik.errors.clientDetails?.code)
-                  }
-                  helperText={
-                    formik.touched.clientDetails?.code &&
-                    formik.errors.clientDetails?.code
-                  }
-                />
+              <TextField
+  label="Code"
+  name="clientDetails.code"
+  fullWidth
+  margin="normal"
+  size="small"
+  sx={{
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': {
+         borderColor: message.success 
+          ? '#34D399' // Vert-400
+          : message.err ? '#F87171' :'' // Rouge-400
+      },
+      '&:hover fieldset': {
+        borderColor: message.success 
+          ? '#34D399' // Vert-400
+          :  message.err ? '#F87171' :''// Rouge-400
+          
+      },
+      '&.Mui-focused fieldset': {
+       borderColor: message.success 
+          ? '#34D399' // Vert-400
+          :  message.err ? '#F87171' :'' // Rouge-400
+            
+      }
+    }
+  }}
+  InputProps={{
+    style: {
+      fontWeight: 500,
+      borderRadius: '8px'
+    }
+  }}
+  value={formik.values.clientDetails.code}
+  onChange={(e) => {
+    formik.handleChange(e);
+    if (e.target.value.length > 0) {
+      fetchClientByCode(e.target.value);
+      handleVerifyCode(e.target.value);
+    } else {
+      setMessage({}); // Réinitialiser les messages
+      setNumEntete({})
+    }
+  }}
+  error={
+    formik.touched.clientDetails?.code && 
+    Boolean(formik.errors.clientDetails?.code || message.err)
+  }
+  helperText={
+    message.success ? (
+      <span className="text-green-600">{message.success}</span>
+    ) : (
+      (formik.touched.clientDetails?.code && formik.errors.clientDetails?.code) || 
+     <span className="text-red-600">{message.err}</span>
+    )
+  }
+/>
+               
                 <TextField
                   label="Adresse"
                   name="clientDetails.adresse"
@@ -390,6 +451,7 @@ const DocumentForm = ({ typeDocument }) => {
                     formik.touched.clientDetails?.adresse &&
                     formik.errors.clientDetails?.adresse
                   }
+                   disabled={true}
                 />
                 <TextField
                   label="Matricule"
@@ -407,6 +469,7 @@ const DocumentForm = ({ typeDocument }) => {
                     formik.touched.clientDetails?.matricule &&
                     formik.errors.clientDetails?.matricule
                   } 
+                   disabled={true}
                 />
                 <TextField
                   label="Raison Sociale"
@@ -424,6 +487,7 @@ const DocumentForm = ({ typeDocument }) => {
                     formik.touched.clientDetails?.raisonSociale &&
                     formik.errors.clientDetails?.raisonSociale
                   } 
+                   disabled={true}
                 />
                 <TextField
                   label="Téléphone"
@@ -441,6 +505,7 @@ const DocumentForm = ({ typeDocument }) => {
                     formik.touched.clientDetails?.telephone &&
                     formik.errors.clientDetails?.telephone
                   } 
+                   disabled={true}
                 />
               </Box>
 
@@ -455,11 +520,43 @@ const DocumentForm = ({ typeDocument }) => {
                   fullWidth
                   margin="normal"
                   value={formik.values.numero}
-                  onChange={formik.handleChange}
-                  error={formik.touched.numero && Boolean(formik.errors.numero)}
-                  helperText={formik.touched.numero && formik.errors.numero}
+                  onChange={(e)=>handelnumeroEntete(e.target.value)}
+                   sx={{
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': {
+         borderColor: numEntete.success 
+          ? '#34D399' // Vert-400
+          : numEntete.err ?  '#F87171' :'' // Rouge-400
+      },
+      '&:hover fieldset': {
+        borderColor: numEntete.success 
+          ? '#34D399' // Vert-400
+          :  numEntete.err ?  '#F87171' :'' // Rouge-400
+          
+      },
+      '&.Mui-focused fieldset': {
+       borderColor: numEntete.success 
+          ? '#34D399' // Vert-400
+          : numEntete.err ?  '#F87171' :''// Rouge-400
+            
+      }
+    }
+  }}
+                  error={
+    formik.touched.numero && 
+    Boolean(formik.errors?.numero || numEntete.err)
+  }
+  helperText={
+    numEntete.success ? (
+      <span className="text-green-600">{numEntete.success}</span>
+    ) : (
+      (formik.touched.numero && formik.errors?.numero) || 
+     <span className="text-red-600">{numEntete.err}</span>
+    )
+  }
                   size="small"
                 />
+               
                 <TextField
                   label="Date"
                   name="date"

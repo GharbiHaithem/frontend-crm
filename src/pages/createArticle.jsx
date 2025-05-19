@@ -102,7 +102,7 @@ export default function CreateArticle() {
   // Modifiez la soumission du formulaire
 onSubmit: async (values) => {
   try {
-    alert(JSON.stringify(values, null, 2));
+   
     const formData = new FormData();
     
     // Ajout de tous les champs au FormData
