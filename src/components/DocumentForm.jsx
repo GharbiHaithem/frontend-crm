@@ -37,24 +37,7 @@ const validationSchema = Yup.object().shape({
   pointVente: Yup.string().required("pointVente  est obligatoire"),
   typePaiement: Yup.string().required("typePaiement  est obligatoire"),
   commentaire: Yup.string().required("commentaire  est obligatoire"),
-  lignes: Yup.array()
-    .of(
-      Yup.object().shape({
-        codeArticle: Yup.string().required("Le code article est obligatoire"),
-        famille: Yup.string(),
-        libelleArticle: Yup.string(),
-        quantite: Yup.number()
-          .required("La quantité est obligatoire")
-          .min(1, "La quantité doit être au moins 1"),
-        prixHT: Yup.number().required("Le prix HT est obligatoire"),
-        remise: Yup.number()
-          .min(0, "La remise ne peut pas être négative")
-          .max(100, "La remise ne peut pas dépasser 100%"),
-        tva: Yup.number().required("La TVA est obligatoire"),
-        prixTTC: Yup.number().required("Le prix TTC est obligatoire"),
-      })
-    )
-    .min(1, "Au moins une ligne est requise"),
+ 
 });
 
 const DocumentForm = ({ typeDocument }) => {
@@ -105,9 +88,9 @@ const DocumentForm = ({ typeDocument }) => {
           numero: values.numero,
           date: values.date,
           client: values.client,
-          totalHT: values.totalHT,
-          totalTTC: values.totalTTC,
-          lignes: values.lignes,
+          totalHT: values.totalHT || 0,
+          totalTTC: values.totalTTC || 0,
+          lignes: values.lignes || [],
           referenceCommande: values.refBCC,
           pointVente: values.pointVente,
           typePaiement: values.typePaiement,
@@ -120,67 +103,61 @@ const DocumentForm = ({ typeDocument }) => {
         );
         setId(response.data._id);
         setEnregistrementReussi(true);
-        
-      setTimeout(()=>{
-        console.log("Typpe Loading")
-          if(typeDocument==="Devis"){
-             console.log("Typpe Devis")
-                 Swal.fire("Enregistré !", "Le Devis a été Ajouter avec succees.", "success");
-       
-        }
-      },2000)
-         navigate('/devis-consulter')
-       
+
+        setTimeout(() => {
+          console.log("Typpe Loading")
+          if (typeDocument === "Devis") {
+            console.log("Typpe Devis")
+            Swal.fire("Enregistré !", "Le Devis a été Ajouter avec succees.", "success");
+
+          }
+        }, 2000)
+        navigate('/devis-consulter')
+
       } catch (error) {
         console.error("Erreur lors de l'enregistrement", error);
       }
     },
   });
 
-  useEffect(() => {
-    axios
-      .get("http://localhost:5000/famille")
-      .then((response) => {
-        setFamilles(response.data);
-      })
-      .catch((error) =>
-        console.error("Erreur de chargement des familles", error)
-      );
-  }, []);
+  // useEffect(() => {
+  //   axios
+  //     .get("http://localhost:5000/famille")
+  //     .then((response) => {
+  //       setFamilles(response.data);
+  //     })
+  //     .catch((error) =>
+  //       console.error("Erreur de chargement des familles", error)
+  //     );
+  // }, []);
 
   useEffect(() => {
     handelnumero(formik.values.date, typeDocument);
   }, [formik.values.date, typeDocument]);
+const handelnumero = (date, type_achat) => {
+  if (!date) return;
 
-  const handelnumero = async (date, type_achat) => {
-    if (date) {
-      const today = new Date(date);
-      const year = today.getFullYear().toString().slice(-2);
+  const d = new Date(date);
+  const y = d.getFullYear().toString().slice(-2);
 
-      let entete =
-        type_achat === "Devis"
-          ? "DV"
-          : type_achat === "Bon Commande"
-          ? "BC"
-          : "BL";
+  const timeCode =
+    String(d.getMonth() + 1).padStart(2, "0") +
+    String(d.getDate()).padStart(2, "0") +
+    String(d.getHours()).padStart(2, "0") +
+    String(d.getMinutes()).padStart(2, "0") +
+    String(d.getSeconds()).padStart(2, "0");
 
-      try {
-        const response = await axios.get(
-          `http://localhost:5000/entetes/total/${type_achat}/${today.getFullYear()}`
-        );
+  const rand = Math.floor(Math.random() * 1000).toString().padStart(3, "0");
 
-        if (response.status === 200) {
-          const documentCount = parseInt(response.data.documentCount, 10) || 0;
-          formik.setFieldValue(
-            "numero",
-            `${entete}01${year}${String(documentCount + 1).padStart(4, "0")}`
-          );
-        }
-      } catch (error) {
-        console.error("Erreur lors de la génération du numéro:", error);
-      }
-    }
-  };
+  const uniqueCode = `${y}${timeCode}${rand}`;
+
+  const enteteAchat = type_achat === "Devis" ? "DV" : type_achat === "Bon Commande" ? "BC" : "BL";
+  const entetePointVente = "PV";
+
+  formik.setFieldValue("numero", `${enteteAchat}${uniqueCode}`);
+  formik.setFieldValue("pointVente", `${entetePointVente}${uniqueCode}`);
+};
+
 
   const ajouterLigne = () => {
     const nouvelleLigne = {
@@ -197,7 +174,7 @@ const DocumentForm = ({ typeDocument }) => {
   };
 
   const supprimerLigne = (index) => {
-    if (index === 0) return;
+   
     const nouvellesLignes = formik.values.lignes.filter((_, i) => i !== index);
     formik.setFieldValue("lignes", nouvellesLignes);
     calculerTotal(nouvellesLignes);
@@ -277,14 +254,14 @@ const DocumentForm = ({ typeDocument }) => {
 
     handleCloseModal();
   };
-const [message, setMessage] = useState({
-  success: '',
-  err: ''
-});
-const [numEntete, setNumEntete] = useState({
-  success: '',
-  err: ''
-});
+  const [message, setMessage] = useState({
+    success: '',
+    err: ''
+  });
+  const [numEntete, setNumEntete] = useState({
+    success: '',
+    err: ''
+  });
 
   const fetchClientByCode = (code) => {
     axios
@@ -309,9 +286,9 @@ const [numEntete, setNumEntete] = useState({
         formik.setFieldValue("client", "");
       });
   };
-  const handleVerifyCode= async(code) =>{
+  const handleVerifyCode = async (code) => {
     console.log(code)
-    await axios.post('http://localhost:5000/clients/verifyCode',{code}).then((response)=>setMessage({success:response.data.message,err:""})).catch((erreur)=>setMessage({success:'',err:erreur.response.data.message}))
+    await axios.post('http://localhost:5000/clients/verifyCode', { code }).then((response) => setMessage({ success: response.data.message, err: "" })).catch((erreur) => setMessage({ success: '', err: erreur.response.data.message }))
 
   }
   const fetchArticleByCode = (code, index) => {
@@ -355,11 +332,11 @@ const [numEntete, setNumEntete] = useState({
         calculerTotal(nouvellesLignes);
       });
   };
-const handelnumeroEntete=async(num)=>{
-console.log(num)
-formik.setFieldValue('numero',num)
-await axios.post(`http://localhost:5000/entetes/verifyNumero`,{numero:num}).then((result)=>setNumEntete({success:result.data.message,err:""})).catch((erreur)=>setNumEntete({success:"",err:erreur.response.data.message}))
-}
+  const handelnumeroEntete = async (num) => {
+    console.log(num)
+    formik.setFieldValue('numero', num)
+    await axios.post(`http://localhost:5000/entetes/verifyNumero`, { numero: num }).then((result) => setNumEntete({ success: result.data.message, err: "" })).catch((erreur) => setNumEntete({ success: "", err: erreur.response.data.message }))
+  }
   return (
     <>
       <Navbar />
@@ -377,64 +354,64 @@ await axios.post(`http://localhost:5000/entetes/verifyNumero`,{numero:num}).then
                 <Typography variant="h6" gutterBottom>
                   Client
                 </Typography>
-              <TextField
-  label="Code"
-  name="clientDetails.code"
-  fullWidth
-  margin="normal"
-  size="small"
-  sx={{
-    '& .MuiOutlinedInput-root': {
-      '& fieldset': {
-         borderColor: message.success 
-          ? '#34D399' // Vert-400
-          : message.err ? '#F87171' :'' // Rouge-400
-      },
-      '&:hover fieldset': {
-        borderColor: message.success 
-          ? '#34D399' // Vert-400
-          :  message.err ? '#F87171' :''// Rouge-400
-          
-      },
-      '&.Mui-focused fieldset': {
-       borderColor: message.success 
-          ? '#34D399' // Vert-400
-          :  message.err ? '#F87171' :'' // Rouge-400
-            
-      }
-    }
-  }}
-  InputProps={{
-    style: {
-      fontWeight: 500,
-      borderRadius: '8px'
-    }
-  }}
-  value={formik.values.clientDetails.code}
-  onChange={(e) => {
-    formik.handleChange(e);
-    if (e.target.value.length > 0) {
-      fetchClientByCode(e.target.value);
-      handleVerifyCode(e.target.value);
-    } else {
-      setMessage({}); // Réinitialiser les messages
-      setNumEntete({})
-    }
-  }}
-  error={
-    formik.touched.clientDetails?.code && 
-    Boolean(formik.errors.clientDetails?.code || message.err)
-  }
-  helperText={
-    message.success ? (
-      <span className="text-green-600">{message.success}</span>
-    ) : (
-      (formik.touched.clientDetails?.code && formik.errors.clientDetails?.code) || 
-     <span className="text-red-600">{message.err}</span>
-    )
-  }
-/>
-               
+                <TextField
+                  label="Code"
+                  name="clientDetails.code"
+                  fullWidth
+                  margin="normal"
+                  size="small"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': {
+                        borderColor: message.success
+                          ? '#34D399' // Vert-400
+                          : message.err ? '#F87171' : '' // Rouge-400
+                      },
+                      '&:hover fieldset': {
+                        borderColor: message.success
+                          ? '#34D399' // Vert-400
+                          : message.err ? '#F87171' : ''// Rouge-400
+
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: message.success
+                          ? '#34D399' // Vert-400
+                          : message.err ? '#F87171' : '' // Rouge-400
+
+                      }
+                    }
+                  }}
+                  InputProps={{
+                    style: {
+                      fontWeight: 500,
+                      borderRadius: '8px'
+                    }
+                  }}
+                  value={formik.values.clientDetails.code}
+                  onChange={(e) => {
+                    formik.handleChange(e);
+                    if (e.target.value.length > 0) {
+                      fetchClientByCode(e.target.value);
+                      handleVerifyCode(e.target.value);
+                    } else {
+                      setMessage({}); // Réinitialiser les messages
+                      setNumEntete({})
+                    }
+                  }}
+                  error={
+                    formik.touched.clientDetails?.code &&
+                    Boolean(formik.errors.clientDetails?.code || message.err)
+                  }
+                  helperText={
+                    message.success ? (
+                      <span className="text-green-600">{message.success}</span>
+                    ) : (
+                      (formik.touched.clientDetails?.code && formik.errors.clientDetails?.code) ||
+                      <span className="text-red-600">{message.err}</span>
+                    )
+                  }
+                />
+
                 <TextField
                   label="Adresse"
                   name="clientDetails.adresse"
@@ -451,7 +428,7 @@ await axios.post(`http://localhost:5000/entetes/verifyNumero`,{numero:num}).then
                     formik.touched.clientDetails?.adresse &&
                     formik.errors.clientDetails?.adresse
                   }
-                   disabled={true}
+                  disabled={true}
                 />
                 <TextField
                   label="Matricule"
@@ -468,8 +445,8 @@ await axios.post(`http://localhost:5000/entetes/verifyNumero`,{numero:num}).then
                   helperText={
                     formik.touched.clientDetails?.matricule &&
                     formik.errors.clientDetails?.matricule
-                  } 
-                   disabled={true}
+                  }
+                  disabled={true}
                 />
                 <TextField
                   label="Raison Sociale"
@@ -486,8 +463,8 @@ await axios.post(`http://localhost:5000/entetes/verifyNumero`,{numero:num}).then
                   helperText={
                     formik.touched.clientDetails?.raisonSociale &&
                     formik.errors.clientDetails?.raisonSociale
-                  } 
-                   disabled={true}
+                  }
+                  disabled={true}
                 />
                 <TextField
                   label="Téléphone"
@@ -504,59 +481,17 @@ await axios.post(`http://localhost:5000/entetes/verifyNumero`,{numero:num}).then
                   helperText={
                     formik.touched.clientDetails?.telephone &&
                     formik.errors.clientDetails?.telephone
-                  } 
-                   disabled={true}
+                  }
+                  disabled={true}
                 />
               </Box>
 
               {/* Section Générale */}
               <Box sx={{ flex: 1 }}>
+
                 <Typography variant="h6" gutterBottom>
                   Général
                 </Typography>
-                <TextField
-                  label="Numéro"
-                  name="numero"
-                  fullWidth
-                  margin="normal"
-                  value={formik.values.numero}
-                  onChange={(e)=>handelnumeroEntete(e.target.value)}
-                   sx={{
-    '& .MuiOutlinedInput-root': {
-      '& fieldset': {
-         borderColor: numEntete.success 
-          ? '#34D399' // Vert-400
-          : numEntete.err ?  '#F87171' :'' // Rouge-400
-      },
-      '&:hover fieldset': {
-        borderColor: numEntete.success 
-          ? '#34D399' // Vert-400
-          :  numEntete.err ?  '#F87171' :'' // Rouge-400
-          
-      },
-      '&.Mui-focused fieldset': {
-       borderColor: numEntete.success 
-          ? '#34D399' // Vert-400
-          : numEntete.err ?  '#F87171' :''// Rouge-400
-            
-      }
-    }
-  }}
-                  error={
-    formik.touched.numero && 
-    Boolean(formik.errors?.numero || numEntete.err)
-  }
-  helperText={
-    numEntete.success ? (
-      <span className="text-green-600">{numEntete.success}</span>
-    ) : (
-      (formik.touched.numero && formik.errors?.numero) || 
-     <span className="text-red-600">{numEntete.err}</span>
-    )
-  }
-                  size="small"
-                />
-               
                 <TextField
                   label="Date"
                   name="date"
@@ -574,6 +509,50 @@ await axios.post(`http://localhost:5000/entetes/verifyNumero`,{numero:num}).then
                   size="small"
                 />
                 <TextField
+                  label="Numéro"
+                  name="numero"
+                  fullWidth
+                  margin="normal"
+                  value={formik.values.numero}
+                  onChange={(e) => handelnumeroEntete(e.target.value)}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': {
+                        borderColor: numEntete.success
+                          ? '#34D399' // Vert-400
+                          : numEntete.err ? '#F87171' : '' // Rouge-400
+                      },
+                      '&:hover fieldset': {
+                        borderColor: numEntete.success
+                          ? '#34D399' // Vert-400
+                          : numEntete.err ? '#F87171' : '' // Rouge-400
+
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: numEntete.success
+                          ? '#34D399' // Vert-400
+                          : numEntete.err ? '#F87171' : ''// Rouge-400
+
+                      }
+                    }
+                  }}
+                  error={
+                    formik.touched.numero &&
+                    Boolean(formik.errors?.numero || numEntete.err)
+                  }
+                  helperText={
+                    numEntete.success ? (
+                      <span className="text-green-600">{numEntete.success}</span>
+                    ) : (
+                      (formik.touched.numero && formik.errors?.numero) ||
+                      <span className="text-red-600">{numEntete.err}</span>
+                    )
+                  }
+                  size="small"
+                />
+
+
+                <TextField
                   label="Réf. BCC"
                   name="refBCC"
                   fullWidth
@@ -588,7 +567,7 @@ await axios.post(`http://localhost:5000/entetes/verifyNumero`,{numero:num}).then
                   helperText={
                     formik.touched?.refBCC &&
                     formik.errors?.refBCC
-                  } 
+                  }
                 />
                 <TextField
                   label="Point de Vente"
@@ -598,6 +577,7 @@ await axios.post(`http://localhost:5000/entetes/verifyNumero`,{numero:num}).then
                   value={formik.values.pointVente}
                   onChange={formik.handleChange}
                   size="small"
+                  disabled={true}
                   error={
                     formik.touched?.pointVente &&
                     Boolean(formik.errors?.pointVente)
@@ -605,7 +585,7 @@ await axios.post(`http://localhost:5000/entetes/verifyNumero`,{numero:num}).then
                   helperText={
                     formik.touched.pointVente &&
                     formik.errors.pointVente
-                  } 
+                  }
                 />
                 <TextField
                   label="Type de Paiement"
@@ -622,7 +602,7 @@ await axios.post(`http://localhost:5000/entetes/verifyNumero`,{numero:num}).then
                   helperText={
                     formik.touched?.typePaiement &&
                     formik.errors?.typePaiement
-                  } 
+                  }
                 />
                 <TextField
                   label="Commentaire"
@@ -641,7 +621,7 @@ await axios.post(`http://localhost:5000/entetes/verifyNumero`,{numero:num}).then
                   helperText={
                     formik.touched?.commentaire &&
                     formik.errors?.commentaire
-                  } 
+                  }
                 />
               </Box>
             </Box>
@@ -649,7 +629,7 @@ await axios.post(`http://localhost:5000/entetes/verifyNumero`,{numero:num}).then
             <Typography variant="h6" gutterBottom>
               Lignes du document
             </Typography>
-            <Box sx={{ overflowX: "auto" }}>
+         { formik.values.lignes?.length>0 &&   <Box sx={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
                   <tr>
@@ -659,9 +639,7 @@ await axios.post(`http://localhost:5000/entetes/verifyNumero`,{numero:num}).then
                     <th style={{ padding: "8px", border: "1px solid #ddd" }}>
                       Code Article
                     </th>
-                    <th style={{ padding: "8px", border: "1px solid #ddd" }}>
-                      Famille
-                    </th>
+                  
                     <th style={{ padding: "8px", border: "1px solid #ddd" }}>
                       Libellé Article
                     </th>
@@ -708,13 +686,7 @@ await axios.post(`http://localhost:5000/entetes/verifyNumero`,{numero:num}).then
                           }
                         />
                       </td>
-                      <td style={{ padding: "8px", border: "1px solid #ddd" }}>
-                        <TextField
-                          value={ligne.famille}
-                          size="small"
-                          disabled
-                        />
-                      </td>
+                    
                       <td style={{ padding: "8px", border: "1px solid #ddd" }}>
                         <TextField
                           value={ligne.libelleArticle}
@@ -780,7 +752,7 @@ await axios.post(`http://localhost:5000/entetes/verifyNumero`,{numero:num}).then
                         />
                       </td>
                       <td style={{ padding: "8px", border: "1px solid #ddd" }}>
-                        {index !== 0 && (
+                     
                           <Button
                             onClick={() => supprimerLigne(index)}
                             size="small"
@@ -788,13 +760,13 @@ await axios.post(`http://localhost:5000/entetes/verifyNumero`,{numero:num}).then
                           >
                             Supprimer
                           </Button>
-                        )}
+                        
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </Box>
+            </Box>}
 
             <Box sx={{ mt: 2, mb: 4 }}>
               <Button

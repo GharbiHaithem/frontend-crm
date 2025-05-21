@@ -37,6 +37,15 @@ const BonCommandePage = () => {
       typeDocument,
       id,
       numero,
+        date,
+    client,
+    totalHT,
+    totalTTC,
+    lignes,
+    referenceCommande: refBCC,
+    pointVente,
+    typePaiement,
+    commentaire
     };
     // Créer un nouveau document PDF
     const doc = new jsPDF();

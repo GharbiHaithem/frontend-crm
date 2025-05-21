@@ -53,7 +53,7 @@ export default function Article() {
   // Delete article by ID
   const deleteArticle = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/article/${id}`);
+      await axios.delete(`http://localhost:5000/articles/${id}`);
       fetchArticles(); // Refresh list after deletion
     } catch (error) {
       console.error("Error deleting article:", error);

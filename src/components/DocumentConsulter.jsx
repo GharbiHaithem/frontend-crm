@@ -102,32 +102,33 @@ const DocumentConsulter = ({ typeDocument }) => {
   }, [filteredDocuments, currentPage, itemsPerPage]);
   console.log(documents)
   // Générer un nouveau document
-  const handleGeneration = () => {
-    if (!selectedDocument) return;
-    console.log(selectedDocument)
-    const documentData = {
-      typeDocument: typeAchat,
-      id: selectedDocument._id,
-      numero: selectedDocument.numero?.replace(
-        /^DV/,
-        typeAchat === "Bon Commande" ? "BC" : "BL"
-      ),
-      date: selectedDocument.date,
-      client: selectedDocument?.client,
-      totalHT: selectedDocument.totalHT,
-      totalTTC: selectedDocument.totalTTC,
-      lignes: selectedDocument.lignes || [],
-      referenceCommande: selectedDocument.referenceCommande || "",
-      pointVente: selectedDocument.pointVente || "",
-      typePaiement: selectedDocument.typePaiement || "",
-      commentaire: selectedDocument.commentaire || "",
-    };
+const handleGeneration = () => {
+  if (!selectedDocument) return;
+  console.log(selectedDocument);
 
-    navigate(`/${typeAchat.toLowerCase().replace(" ", "-")}`, {
-      state: documentData,
-    });
-    setOpenModal(false);
+  const documentData = {
+    typeDocument: typeAchat,
+    id: selectedDocument._id,
+    numero: selectedDocument.numero?.replace(
+      /^DV/,
+      typeAchat === "Bon Commande" ? "BC" : "BL"
+    ),
+    date: new Date(), // <-- Remplace ici par la date système actuelle
+    client: selectedDocument?.client,
+    totalHT: selectedDocument.totalHT,
+    totalTTC: selectedDocument.totalTTC,
+    lignes: selectedDocument.lignes || [],
+    referenceCommande: selectedDocument.referenceCommande || "",
+    pointVente: selectedDocument.pointVente || "",
+    typePaiement: selectedDocument.typePaiement || "",
+    commentaire: selectedDocument.commentaire || "",
   };
+
+  navigate(`/${typeAchat.toLowerCase().replace(" ", "-")}`, {
+    state: documentData,
+  });
+  setOpenModal(false);
+};
 
   // Afficher les détails d'un document
   const handleViewDetails = (id) => {
@@ -396,7 +397,9 @@ if (date) {
                 <TableRow>
                   <TableCell>Numéro</TableCell>
                   <TableCell>Date</TableCell>
-                  <TableCell>Client</TableCell>
+                
+                   <TableCell>Client Code</TableCell>
+                     <TableCell>Client Name</TableCell>
                   <TableCell>Total HT</TableCell>
                   <TableCell>Total TTC</TableCell>
                   <TableCell>Actions</TableCell>
@@ -409,12 +412,14 @@ if (date) {
                     <TableCell>
                       {new Date(doc.date).toLocaleDateString()}
                     </TableCell>
+                         <TableCell>{doc?.client?.code}</TableCell>
                     <TableCell>
 
                       {typeDocument === "Facture"
                         ? doc?.client?.nom_prenom
                         : doc.client?.raison_social}
                     </TableCell>
+                
                     <TableCell>{(doc.totalHT || 0).toFixed(2)}</TableCell>
                     <TableCell>{(doc.totalTTC || 0).toFixed(2)}</TableCell>
                     <TableCell>
