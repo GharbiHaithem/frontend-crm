@@ -5,6 +5,8 @@ import { useAppStore } from "../appStore";
 // Menu items configuration
 const menuItems = [
   { path: "/home", label: "Dashboard", icon: "home" },
+
+  
   { path: "/clients", label: "Clients", icon: "users" },
   { path: "/articles", label: "Articles", icon: "document" },
   { path: "/FamilleArticle", label: "Famille d'articles", icon: "collection" },
@@ -47,6 +49,24 @@ const Icon = ({ name }) => {
           />
         </svg>
       );
+     case "caisse":
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-6 w-6"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M4 7h16M4 11h16M4 15h16M4 19h16M8 3h8v4H8V3z"
+      />
+    </svg>
+  );
+
     case "users":
       return (
         <svg
@@ -290,9 +310,13 @@ export default function Sidenav() {
         dopen ? "w-64" : "w-16"
       }`}
     >
-      <div className="flex flex-col h-full">
+      <div className="flex   flex-col h-full">
         {/* Header with toggle button */}
-        <div className="flex items-center justify-end p-4 border-b border-gray-200">
+           
+        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          <div className={`${dopen?'flex':'hidden'} `}>
+              <span className="text-xl font-bold text-primary-700">Dashboard</span>
+            </div>
           <button
             onClick={() => UpdateOpen(!dopen)}
             className="p-1 rounded-full text-gray-500 hover:bg-gray-100 focus:outline-none"

@@ -11,16 +11,33 @@ import {
   Box,
 } from "@mui/material";
 
-const AddEventModal = ({ open, handleClose, eventFormData, setEventFormData, onAddEvent, todos }) => {
+const AddEventModal = ({
+  open,
+  handleClose,
+  eventFormData,
+  setEventFormData,
+  onAddEvent,
+  todos,
+}) => {
   const { description } = eventFormData;
+  const [error, setError] = useState("");
 
-  const onClose = () => handleClose();
+  const onClose = () => {
+    setError(""); // reset erreur
+    handleClose();
+  };
 
   const onChange = (event) => {
+    const { name, value } = event.target;
     setEventFormData((prevState) => ({
       ...prevState,
-      [event.target.name]: event.target.value,
+      [name]: value,
     }));
+
+    // Réinitialiser l’erreur en live
+    if (name === "description" && value.trim() !== "") {
+      setError("");
+    }
   };
 
   const handleTodoChange = (e, value) => {
@@ -30,11 +47,24 @@ const AddEventModal = ({ open, handleClose, eventFormData, setEventFormData, onA
     }));
   };
 
+const handleAdd = (e) => {
+  e.preventDefault(); // ✔️ maintenant e est bien défini
+  if (!description || description.trim() === "") {
+    setError("La description est obligatoire");
+    return;
+  }
+
+  setError("");
+  onAddEvent(e); // e est transmis au parent
+};
+
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Add Event</DialogTitle>
+      <DialogTitle>Ajouter un événement</DialogTitle>
       <DialogContent>
-        <DialogContentText>To add an event, please fill in the information below.</DialogContentText>
+        <DialogContentText>
+          Pour ajouter un événement, veuillez remplir les informations ci-dessous.
+        </DialogContentText>
         <Box component="form">
           <TextField
             name="description"
@@ -46,7 +76,10 @@ const AddEventModal = ({ open, handleClose, eventFormData, setEventFormData, onA
             fullWidth
             variant="outlined"
             onChange={onChange}
+            error={!!error}
+            helperText={error}
           />
+
           <Autocomplete
             onChange={handleTodoChange}
             disablePortal
@@ -54,17 +87,17 @@ const AddEventModal = ({ open, handleClose, eventFormData, setEventFormData, onA
             options={todos}
             sx={{ marginTop: 4 }}
             getOptionLabel={(option) => option.title}
-            renderInput={(params) => <TextField {...params} label="Todo" />}
+            renderInput={(params) => <TextField {...params} label="Faire" />}
           />
         </Box>
       </DialogContent>
       <DialogActions>
         <Button color="error" onClick={onClose}>
-          Cancel
+          Annuler
         </Button>
-        <Button disabled={description === ""} color="success" onClick={onAddEvent}>
-          Add
-        </Button>
+       <Button color="success" onClick={(e) => handleAdd(e)}>
+  Ajouter
+</Button>
       </DialogActions>
     </Dialog>
   );

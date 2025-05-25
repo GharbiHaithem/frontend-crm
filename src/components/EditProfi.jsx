@@ -11,15 +11,15 @@ import {
 import axios from 'axios';
 import { MdOutlinePassword } from "react-icons/md";
 import Swal from 'sweetalert2';
+import { Link } from 'react-router-dom';
 const EditProfi = () => {
   const [loading, setLoading] = useState(true);
   const [initialData, setInitialData] = useState(null);
   const[editPassword,setEditPassword]= useState(false)
+    const[userName,setUserName]= useState(false)
   // Récupération du token
   const token = localStorage.getItem('token');
-  
-  useEffect(() => {
-    const fetchProfile = async () => {
+  const fetchProfile = async () => {
       try {
         if (!token) {
           console.error('No token found');
@@ -33,6 +33,7 @@ const EditProfi = () => {
         });
         
         console.log('Profile data:', response.data);
+        
         setInitialData(response.data);
         setLoading(false);
       } catch (error) {
@@ -40,9 +41,11 @@ const EditProfi = () => {
         setLoading(false);
       }
     };
+  useEffect(() => {
+  
 
     fetchProfile();
-  }, [token]); // Ajoutez token comme dépendance
+  }, []); // Ajoutez token comme dépendance
 
   // Validation schema
   const validationSchema = Yup.object().shape({
@@ -72,29 +75,44 @@ const [messageErreur,setMessageErreur]=useState(null)
     },
   });
 
-  const handleUpdate = async (values) => {
-    try {
-      const response = await axios.put(
-        `http://localhost:5000/auth/editProfil`,
-        values,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+const handleUpdate = async (values) => {
+  try {
+    const response = await axios.put(
+      `http://localhost:5000/auth/editProfil`,
+      values,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
         }
-      );
-      console.log('Update successful:', response.data);
-      Swal.fire({
-  title: "Update successful!",
-  text:  response.data.message,
-  icon: "success"
-});
-    localStorage.setItem('user',JSON.stringify(response.data.user))
-    } catch (error) {
-        setMessageErreur(error.response.data.message)
-      console.error('Update error:', error);
-    }
-  };
+      }
+    );
+
+    // Mise à jour locale
+    const updatedUser = response.data.user;
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    setInitialData(updatedUser); // ← ceci met à jour les champs du formulaire sans reload
+    formik.setValues({
+      ...formik.values,
+      ...updatedUser,
+      password: '',
+      currentPassword: ''
+    });
+
+    // Optionnel : mettre à jour le nom affiché dans la navbar par exemple
+    setUserName(updatedUser.name);
+
+    Swal.fire({
+      title: "Update successful!",
+      text: response.data.message,
+      icon: "success"
+    });
+
+  } catch (error) {
+    setMessageErreur(error.response?.data?.message || "Erreur inconnue");
+    console.error('Update error:', error);
+  }
+};
+
 
   if (loading) {
     return <Typography>Loading profile data...</Typography>;
@@ -102,11 +120,18 @@ const [messageErreur,setMessageErreur]=useState(null)
 
   return (
     <Paper elevation={3} sx={{ p: 3, maxWidth: 600 }}>
-      <Typography variant="h5" gutterBottom>
+       <nav aria-label="breadcrumb">
+          <ol class="breadcrumb   bg-white w-full p-3">
+            <li class="breadcrumb-item"><Link to={"/"}>Home</Link></li>
+         
+            <li class="breadcrumb-item active" aria-current="page">Profile Info</li>
+          </ol>
+        </nav>
+      <Typography variant="h5"  gutterBottom>
         Edit Profile
       </Typography>
       
-      <form onSubmit={formik.handleSubmit}>
+      <form className='mt-5' onSubmit={formik.handleSubmit}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {/* Name Field */}
           <TextField
@@ -120,6 +145,7 @@ const [messageErreur,setMessageErreur]=useState(null)
             error={formik.touched.name && Boolean(formik.errors.name)}
             helperText={formik.touched.name && formik.errors.name}
             size="small"
+              sx={{ borderRadius: 2, backgroundColor: 'white' }} // 👈 Ajouté ici
           />
 
           {/* Email Field */}
@@ -135,9 +161,10 @@ const [messageErreur,setMessageErreur]=useState(null)
             error={formik.touched.email && Boolean(formik.errors.email)}
             helperText={formik.touched.email && formik.errors.email}
             size="small"
+              sx={{ borderRadius: 2, backgroundColor: 'white' }} // 👈 Ajouté ici
           />
 
-        <div onClick={()=>setEditPassword(!editPassword)} style={{color:'#5CB4DA',fontWeight:400,cursor:'pointer'}} className='flex border rounded-sm p-2 items-center gap-5 text-primary fs-5'>
+        <div onClick={()=>setEditPassword(!editPassword)} style={{color:'#5CB4DA',fontWeight:200,cursor:'pointer'}} className='flex border rounded-sm p-2 items-center gap-1 text-secondary '>
           <MdOutlinePassword /> Editer Password
         </div>
       {editPassword && 
@@ -155,6 +182,7 @@ const [messageErreur,setMessageErreur]=useState(null)
             helperText={formik.touched.currentPassword && formik.errors.currentPassword}
             size="small"
             placeholder="Leave empty to keep current password"
+              sx={{ borderRadius: 2, backgroundColor: 'white' }} // 👈 Ajouté ici
           />
           {messageErreur && <span  style={{color:'red',fontWeight:400,fontSize:'14px', fontStyle: 'italic'}}>{messageErreur}</span>}
       <TextField
@@ -170,6 +198,7 @@ const [messageErreur,setMessageErreur]=useState(null)
             helperText={formik.touched.password && formik.errors.password}
             size="small"
             placeholder="Leave empty to keep current password"
+              sx={{ borderRadius: 2, backgroundColor: 'white' }} // 👈 Ajouté ici
           />
     </>
 }
@@ -187,6 +216,7 @@ const [messageErreur,setMessageErreur]=useState(null)
             size="small"
             multiline
             rows={2}
+              sx={{ borderRadius: 2, backgroundColor: 'white' }} // 👈 Ajouté ici
           />
 
           {/* Phone Field */}
@@ -201,16 +231,17 @@ const [messageErreur,setMessageErreur]=useState(null)
             error={formik.touched.phone && Boolean(formik.errors.phone)}
             helperText={formik.touched.phone && formik.errors.phone}
             size="small"
+              sx={{ borderRadius: 2, backgroundColor: 'white' }} // 👈 Ajouté ici
           />
 
           {/* Submit Button */}
           <Button
-            color="primary"
+            color="secondary"
             variant="contained"
             type="submit"
             sx={{ mt: 2 }}
           >
-            Update Profile
+            Update Infos
           </Button>
         </Box>
       </form>

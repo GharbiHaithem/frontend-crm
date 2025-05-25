@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Settings from "./pages/Settings";
 import About from "./pages/About";
@@ -38,6 +38,10 @@ import Payement from "./components/Payement";
 import PaymentSuccess from "./pages/PayementSuccess";
 import DetailsClient from "./pages/DetailsClient";
 import DetailsArticle from "./components/DetailsArticle/DetailsArticle";
+import Caisse from "./components/Caisse";
+import CaisseForm from "./components/CaisseForm";
+import DetailsPayement from "./components/DetailsPayement";
+import InfoProfil from "./pages/InfoProfil";
 // Protected route component
 const ProtectedRoute = ({ children }) => {
   const { currentUser, loading } = useAuth();
@@ -60,6 +64,7 @@ const ProtectedRoute = ({ children }) => {
 
 // Layout component with Navbar and Sidebar
 const DashboardLayout = ({ children }) => {
+ 
   return (
     <div className="min-h-screen bg-neutral-50">
       <NavBar />
@@ -72,6 +77,7 @@ const DashboardLayout = ({ children }) => {
 };
 
 function App() {
+
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
     <AuthProvider>
@@ -415,7 +421,16 @@ function App() {
               </ProtectedRoute>
             }
           />
-
+ <Route
+            path="/payement/:id"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <DetailsPayement />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/about"
             element={
@@ -426,13 +441,42 @@ function App() {
               </ProtectedRoute>
             }
           />
-
+     <Route
+            path="/caisse"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <Caisse />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+            <Route
+            path="/caisse/new"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <CaisseForm />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/settings"
             element={
               <ProtectedRoute>
                 <DashboardLayout>
-                  <Settings />
+                  <Settings/>
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+  <Route
+            path="/infoProfil"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <InfoProfil/>
                 </DashboardLayout>
               </ProtectedRoute>
             }

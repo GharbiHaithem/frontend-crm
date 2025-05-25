@@ -14,13 +14,13 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  FormHelperText,
 } from "@mui/material";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import CloseIcon from "@mui/icons-material/Close";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { SelectChangeEvent } from "@mui/material";
 
 const initialEventFormState = {
   type: "Tâche",
@@ -34,6 +34,7 @@ const initialEventFormState = {
 const AddEventTache = ({ open, handleClose, onAddEvent }) => {
   const [eventFormData, setEventFormData] = useState(initialEventFormState);
   const [newParticipant, setNewParticipant] = useState("");
+  const [errors, setErrors] = useState({});
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -41,6 +42,7 @@ const AddEventTache = ({ open, handleClose, onAddEvent }) => {
       ...prevData,
       [name]: value,
     }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleTypeChange = (e) => {
@@ -48,6 +50,7 @@ const AddEventTache = ({ open, handleClose, onAddEvent }) => {
       ...prevData,
       type: e.target.value,
     }));
+    setErrors((prev) => ({ ...prev, type: "" }));
   };
 
   const handleAddParticipant = () => {
@@ -57,6 +60,7 @@ const AddEventTache = ({ open, handleClose, onAddEvent }) => {
         participants: [...prevData.participants, newParticipant],
       }));
       setNewParticipant("");
+      setErrors((prev) => ({ ...prev, participants: "" }));
     }
   };
 
@@ -67,10 +71,38 @@ const AddEventTache = ({ open, handleClose, onAddEvent }) => {
     }));
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+    if (!eventFormData.type) newErrors.type = "Type requis";
+    if (!eventFormData.title.trim()) newErrors.title = "Titre requis";
+    if (!eventFormData.description.trim()) newErrors.description = "Description requise";
+    if (!eventFormData.start) newErrors.start = "Date de début requise";
+    if (!eventFormData.end) newErrors.end = "Date de fin requise";
+    if (
+      eventFormData.start &&
+      eventFormData.end &&
+      new Date(eventFormData.end) <= new Date(eventFormData.start)
+    ) {
+      newErrors.end = "La date de fin doit être postérieure à la date de début";
+    }
+    if (eventFormData.participants.length === 0)
+      newErrors.participants = "Au moins un participant est requis";
+
+    return newErrors;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    const formErrors = validateForm();
+
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
+      return;
+    }
+
     onAddEvent(eventFormData);
     setEventFormData(initialEventFormState);
+    setErrors({});
     handleClose();
   };
 
@@ -96,17 +128,13 @@ const AddEventTache = ({ open, handleClose, onAddEvent }) => {
               Planifier un événement
             </Typography>
             <form onSubmit={handleSubmit}>
-              {/* Champ Select pour choisir entre Tâche et Réunion */}
-              <FormControl fullWidth margin="normal" size="small">
+              <FormControl fullWidth margin="normal" size="small" error={!!errors.type}>
                 <InputLabel>Type</InputLabel>
-                <Select
-                  value={eventFormData.type}
-                  onChange={handleTypeChange}
-                  label="Type"
-                >
+                <Select value={eventFormData.type} onChange={handleTypeChange} label="Type">
                   <MenuItem value="Réunion">Réunion</MenuItem>
                   <MenuItem value="Tâche">Tâche</MenuItem>
                 </Select>
+                <FormHelperText>{errors.type}</FormHelperText>
               </FormControl>
 
               <TextField
@@ -116,8 +144,9 @@ const AddEventTache = ({ open, handleClose, onAddEvent }) => {
                 value={eventFormData.title}
                 onChange={handleInputChange}
                 margin="normal"
-                required
                 size="small"
+                error={!!errors.title}
+                helperText={errors.title}
               />
               <TextField
                 fullWidth
@@ -129,6 +158,8 @@ const AddEventTache = ({ open, handleClose, onAddEvent }) => {
                 multiline
                 rows={2}
                 size="small"
+                error={!!errors.description}
+                helperText={errors.description}
               />
 
               <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -136,10 +167,20 @@ const AddEventTache = ({ open, handleClose, onAddEvent }) => {
                   label={`Début de la ${eventFormData.type}`}
                   value={eventFormData.start}
                   onChange={(newValue) =>
-                    setEventFormData((prevData) => ({ ...prevData, start: newValue }))
+                    setEventFormData((prevData) => ({
+                      ...prevData,
+                      start: newValue,
+                    }))
                   }
                   renderInput={(params) => (
-                    <TextField {...params} fullWidth margin="normal" required size="small" />
+                    <TextField
+                      {...params}
+                      fullWidth
+                      margin="normal"
+                      size="small"
+                      error={!!errors.start}
+                      helperText={errors.start}
+                    />
                   )}
                 />
               </LocalizationProvider>
@@ -149,10 +190,20 @@ const AddEventTache = ({ open, handleClose, onAddEvent }) => {
                   label={`Fin de la ${eventFormData.type}`}
                   value={eventFormData.end}
                   onChange={(newValue) =>
-                    setEventFormData((prevData) => ({ ...prevData, end: newValue }))
+                    setEventFormData((prevData) => ({
+                      ...prevData,
+                      end: newValue,
+                    }))
                   }
                   renderInput={(params) => (
-                    <TextField {...params} fullWidth margin="normal" required size="small" />
+                    <TextField
+                      {...params}
+                      fullWidth
+                      margin="normal"
+                      size="small"
+                      error={!!errors.end}
+                      helperText={errors.end}
+                    />
                   )}
                 />
               </LocalizationProvider>
@@ -186,6 +237,11 @@ const AddEventTache = ({ open, handleClose, onAddEvent }) => {
                   />
                 ))}
               </Box>
+              {errors.participants && (
+                <Typography color="error" variant="caption" sx={{ mt: 1 }}>
+                  {errors.participants}
+                </Typography>
+              )}
 
               <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mt: 2 }}>
                 <Button variant="outlined" onClick={handleClose} size="small">

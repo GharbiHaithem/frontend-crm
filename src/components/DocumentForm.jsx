@@ -43,7 +43,7 @@ const validationSchema = Yup.object().shape({
 const DocumentForm = ({ typeDocument }) => {
   console.log(typeDocument)
   const navigate = useNavigate();
-  const [familles, setFamilles] = useState([]);
+
   const [openModal, setOpenModal] = useState(false);
   const [enregistrementReussi, setEnregistrementReussi] = useState(false);
   const [id, setId] = useState();
@@ -74,7 +74,7 @@ const DocumentForm = ({ typeDocument }) => {
           remise: 0,
           tva: 0,
           prixTTC: 0,
-          famille: "",
+        
           libelleArticle: "",
           codeArticle: "",
         },
@@ -133,29 +133,56 @@ const DocumentForm = ({ typeDocument }) => {
 
   useEffect(() => {
     handelnumero(formik.values.date, typeDocument);
-  }, [formik.values.date, typeDocument]);
-const handelnumero = (date, type_achat) => {
+    handelnumeroEntete(formik.values.numero)
+  }, [formik.values.date, typeDocument ,formik.values.numero]);
+const generateNumero = (prefix, y, m, d, count) => {
+  return `${prefix}${y}${m}${d}${String(count).padStart(3, "0")}`;
+};
+
+const handelnumero = async (date, type_achat) => {
   if (!date) return;
 
   const d = new Date(date);
   const y = d.getFullYear().toString().slice(-2);
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const formattedDate = `${d.getFullYear()}-${m}-${day}`;
 
-  const timeCode =
-    String(d.getMonth() + 1).padStart(2, "0") +
-    String(d.getDate()).padStart(2, "0") +
-    String(d.getHours()).padStart(2, "0") +
-    String(d.getMinutes()).padStart(2, "0") +
-    String(d.getSeconds()).padStart(2, "0");
+  const prefix = type_achat === "Devis" ? "DV" : type_achat === "Bon Commande" ? "BC" : "BL";
+  const prefixPV = "PV";
 
-  const rand = Math.floor(Math.random() * 1000).toString().padStart(3, "0");
+  try {
+    const response = await axios.get(
+      `http://localhost:5000/entetes/total-par-date/${type_achat}/${formattedDate}`
+    );
 
-  const uniqueCode = `${y}${timeCode}${rand}`;
+    let count = response.data.count || 0;
+    let numeroValide = false;
+    let numero = "";
 
-  const enteteAchat = type_achat === "Devis" ? "DV" : type_achat === "Bon Commande" ? "BC" : "BL";
-  const entetePointVente = "PV";
+    while (!numeroValide) {
+      count++;
+      numero = generateNumero(prefix, y, m, day, count);
 
-  formik.setFieldValue("numero", `${enteteAchat}${uniqueCode}`);
-  formik.setFieldValue("pointVente", `${entetePointVente}${uniqueCode}`);
+      try {
+        await axios.post(`http://localhost:5000/entetes/verifyNumero`, { numero });
+        numeroValide = true; // si pas d'erreur, c’est OK
+        
+      } catch (error) {
+        if (error.response?.data?.message !== "Numero reservé pour autre devis") {
+          console.error("Erreur lors de la vérification :", error);
+          break;
+        }
+        // sinon, continue la boucle pour essayer le suivant
+      }
+    }
+
+    formik.setFieldValue("numero", numero);
+    formik.setFieldValue("pointVente", generateNumero(prefixPV, y, m, day, count));
+
+  } catch (error) {
+    console.error("Erreur globale génération numéro :", error);
+  }
 };
 
 
@@ -166,7 +193,7 @@ const handelnumero = (date, type_achat) => {
       remise: 0,
       tva: 0,
       prixTTC: 0,
-      famille: "",
+    
       libelleArticle: "",
       codeArticle: "",
     };
@@ -296,17 +323,17 @@ const handelnumero = (date, type_achat) => {
       .get(`http://localhost:5000/articles/code/${code}`)
       .then((response) => {
         const article = response.data;
-        axios
-          .get(`http://localhost:5000/famille/${article.libelleFamille}`)
-          .then((familleResponse) => {
-            const famille = familleResponse.data;
+        
+       
+        
+        
             const nouvellesLignes = [...formik.values.lignes];
             nouvellesLignes[index] = {
               ...nouvellesLignes[index],
               libelleArticle: article.libelle,
               prixHT: article.prix_brut,
               tva: article.tva,
-              famille: famille.designationFamille,
+           
               prixTTC: calculerPrixTTC(
                 article.prix_brut,
                 nouvellesLignes[index].remise,
@@ -315,7 +342,7 @@ const handelnumero = (date, type_achat) => {
             };
             formik.setFieldValue("lignes", nouvellesLignes);
             calculerTotal(nouvellesLignes);
-          });
+        
       })
       .catch((error) => {
         console.error("Erreur de chargement des détails de l'article", error);
@@ -334,8 +361,10 @@ const handelnumero = (date, type_achat) => {
   };
   const handelnumeroEntete = async (num) => {
     console.log(num)
-    formik.setFieldValue('numero', num)
-    await axios.post(`http://localhost:5000/entetes/verifyNumero`, { numero: num }).then((result) => setNumEntete({ success: result.data.message, err: "" })).catch((erreur) => setNumEntete({ success: "", err: erreur.response.data.message }))
+ 
+    await axios.post(`http://localhost:5000/entetes/verifyNumero`, { numero: num }).then((result) =>{ setNumEntete({ success: result.data.message, err: "" })
+     formik.setFieldValue('numero', num)
+  }).catch((erreur) => setNumEntete({ success: "", err: erreur.response.data.message }))
   }
   return (
     <>

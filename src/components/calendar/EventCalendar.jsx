@@ -134,12 +134,12 @@ const EventCalendar = () => {
     <Box mt={1} mb={2} component="main" sx={{ flexGrow: 1, py: 1 }}>
       <Container maxWidth={false}>
         <Card>
-          <CardHeader title="Calendar" subheader="Create Events and Todos and manage them easily" />
+          <CardHeader title="Calendrier" subheader="Créez des événements et des tâches et gérez-les facilement" />
           <Divider />
           <CardContent>
             <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
               <Button onClick={() => setSelectedEventType("open")} size="small" variant="contained">
-                Create
+                Creér
               </Button>
 
               {selectedEventType === "open" && (
@@ -166,7 +166,7 @@ const EventCalendar = () => {
               )}
 
               <Button onClick={() => setOpenTodoModal(true)} size="small" variant="contained">
-                Add Todo
+              Ajouter une tâche
               </Button>
             </Box>
 

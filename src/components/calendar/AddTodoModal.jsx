@@ -41,9 +41,9 @@ export const AddTodoModal = ({ open, handleClose, todos, setTodos }) => {
 
   return (
     <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>Add todo</DialogTitle>
+      <DialogTitle>Ajouter une tâche</DialogTitle>
       <DialogContent>
-        <DialogContentText>Create todos to add to your Calendar.</DialogContentText>
+        <DialogContentText>Créez des tâches à ajouter à votre calendrier.</DialogContentText>
         <Box>
           <TextField
             name="title"
@@ -112,7 +112,7 @@ export const AddTodoModal = ({ open, handleClose, todos, setTodos }) => {
           color="error" 
           onClick={handleClose}
         >
-          Cancel
+          Annuler
         </Button>
         <Button
           onClick={onAddTodo}
@@ -127,7 +127,7 @@ export const AddTodoModal = ({ open, handleClose, todos, setTodos }) => {
             "&.Mui-disabled": { backgroundColor: "#e0e0e0" },
           }}
         >
-          Add
+          Ajouter
         </Button>
       </DialogActions>
     </Dialog>

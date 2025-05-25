@@ -17,7 +17,6 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import CloseIcon from "@mui/icons-material/Close";
 
-// Initial form state
 const initialEventFormState = {
   title: "",
   description: "",
@@ -31,12 +30,18 @@ const initialEventFormState = {
 const AddEventVisite = ({ open, handleClose, onAddEvent }) => {
   const [eventFormData, setEventFormData] = useState(initialEventFormState);
   const [newParticipant, setNewParticipant] = useState("");
+  const [errors, setErrors] = useState({});
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setEventFormData((prevData) => ({
       ...prevData,
       [name]: value,
+    }));
+
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: "",
     }));
   };
 
@@ -47,6 +52,7 @@ const AddEventVisite = ({ open, handleClose, onAddEvent }) => {
         participants: [...prevData.participants, newParticipant.trim()],
       }));
       setNewParticipant("");
+      setErrors((prev) => ({ ...prev, participants: "" }));
     }
   };
 
@@ -57,10 +63,30 @@ const AddEventVisite = ({ open, handleClose, onAddEvent }) => {
     }));
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+    if (!eventFormData.title.trim()) newErrors.title = "Titre requis";
+    if (!eventFormData.description.trim()) newErrors.description = "Description requise";
+    if (!eventFormData.start) newErrors.start = "Date de début requise";
+    if (!eventFormData.end) newErrors.end = "Date de fin requise";
+    if (!eventFormData.location.trim()) newErrors.location = "Lieu requis";
+    if (eventFormData.participants.length === 0)
+      newErrors.participants = "Au moins un fournisseur est requis";
+    return newErrors;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    const formErrors = validateForm();
+
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
+      return;
+    }
+
     onAddEvent(eventFormData);
     setEventFormData(initialEventFormState);
+    setErrors({});
     handleClose();
   };
 
@@ -86,7 +112,6 @@ const AddEventVisite = ({ open, handleClose, onAddEvent }) => {
               Planifier une visite
             </Typography>
             <form onSubmit={handleSubmit}>
-              {/* Titre de la visite */}
               <TextField
                 fullWidth
                 label="Titre de la visite"
@@ -94,11 +119,11 @@ const AddEventVisite = ({ open, handleClose, onAddEvent }) => {
                 value={eventFormData.title}
                 onChange={handleInputChange}
                 margin="normal"
-                required
                 size="small"
+                error={!!errors.title}
+                helperText={errors.title}
               />
 
-              {/* Description */}
               <TextField
                 fullWidth
                 label="Description"
@@ -109,9 +134,10 @@ const AddEventVisite = ({ open, handleClose, onAddEvent }) => {
                 multiline
                 rows={2}
                 size="small"
+                error={!!errors.description}
+                helperText={errors.description}
               />
 
-              {/* Date et heure de début */}
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DateTimePicker
                   label="Début de la visite"
@@ -123,12 +149,18 @@ const AddEventVisite = ({ open, handleClose, onAddEvent }) => {
                     }))
                   }
                   renderInput={(params) => (
-                    <TextField {...params} fullWidth margin="normal" required size="small" />
+                    <TextField
+                      {...params}
+                      fullWidth
+                      margin="normal"
+                      size="small"
+                      error={!!errors.start}
+                      helperText={errors.start}
+                    />
                   )}
                 />
               </LocalizationProvider>
 
-              {/* Date et heure de fin */}
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DateTimePicker
                   label="Fin de la visite"
@@ -140,12 +172,18 @@ const AddEventVisite = ({ open, handleClose, onAddEvent }) => {
                     }))
                   }
                   renderInput={(params) => (
-                    <TextField {...params} fullWidth margin="normal" required size="small" />
+                    <TextField
+                      {...params}
+                      fullWidth
+                      margin="normal"
+                      size="small"
+                      error={!!errors.end}
+                      helperText={errors.end}
+                    />
                   )}
                 />
               </LocalizationProvider>
 
-              {/* Lieu */}
               <TextField
                 fullWidth
                 label="Lieu"
@@ -154,12 +192,13 @@ const AddEventVisite = ({ open, handleClose, onAddEvent }) => {
                 onChange={handleInputChange}
                 margin="normal"
                 size="small"
+                error={!!errors.location}
+                helperText={errors.location}
               />
 
-              {/* Participants */}
               <TextField
                 fullWidth
-                label="Ajouter des participants"
+                label="Ajouter des fournisseurs"
                 value={newParticipant}
                 onChange={(e) => setNewParticipant(e.target.value)}
                 margin="normal"
@@ -185,8 +224,12 @@ const AddEventVisite = ({ open, handleClose, onAddEvent }) => {
                   />
                 ))}
               </Box>
+              {errors.participants && (
+                <Typography color="error" variant="caption" sx={{ mt: 1 }}>
+                  {errors.participants}
+                </Typography>
+              )}
 
-              {/* Boutons d'action */}
               <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mt: 2 }}>
                 <Button variant="outlined" onClick={handleClose} size="small">
                   Annuler

@@ -28,10 +28,10 @@ const EventInfoModal = ({ open, handleClose, onDeleteEvent, currentEvent }) => {
       </DialogContent>
       <DialogActions>
         <Button color="error" onClick={onClose}>
-          Cancel
+          Annuler
         </Button>
         <Button color="info" onClick={onDeleteEvent}>
-          Delete Event
+         Supprimer l'événement
         </Button>
       </DialogActions>
     </Dialog>

@@ -28,15 +28,16 @@ const BonLivraisonPage = () => {
     commentaire,
   } = location.state;
   console.log(location.state)
+  console.log(numero)
   const numeroLivraison = numero.startsWith("BL")
     ? numero
     : numero.replace(/^DV|^BC/, "BL");
 
-  const genererFacture = () => {
+  const genererFacture =async () => {
     const data = {
       typeDocument,
       id,
-      numeroLivraison,
+      numero,
     };
     // Créer un nouveau document PDF
     const doc = new jsPDF();
@@ -121,7 +122,7 @@ const BonLivraisonPage = () => {
     // Sauvegarder le PDF
     doc.save(`Facture_${numero}.pdf`);
     console.log(data);
-    axios
+   await axios
       .put("http://localhost:5000/entetes/devis", data)
       .then((response) => {
         console.log(response);

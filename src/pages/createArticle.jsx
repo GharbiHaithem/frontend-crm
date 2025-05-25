@@ -21,7 +21,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
 const validationSchema = Yup.object().shape({
   libelle: Yup.string().required("Ce champ est requis"),
-  libelleFamille: Yup.string().required("Ce champ est requis"),
+
   libeleCategorie: Yup.string().required("Ce champ est requis"),
   Nombre_unite: Yup.number().required("Ce champ est requis").positive(),
   tva: Yup.number().required("Ce champ est requis"),
@@ -66,7 +66,7 @@ export default function CreateArticle() {
   const formik = useFormik({
     initialValues: {
       libelle:id ? article.libelle : "",
-      libelleFamille:id ? article?.libelleFamille?._id :  "",
+  
       libeleCategorie:id ? article.libeleCategorie?._id :"",
       Nombre_unite:id ? article.Nombre_unite : 0,
       tva: id ? article.tva : 0,
@@ -126,7 +126,7 @@ onSubmit: async (values) => {
     } else {
       // Ajoutez un log pour vérifier les données envoyées
       console.log("Données envoyées:", {
-        libelleFamille: values.libelleFamille,
+     
         libeleCategorie: values.libeleCategorie
       });
 
@@ -145,11 +145,11 @@ onSubmit: async (values) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [famillesRes, categoriesRes] = await Promise.all([
-          axios.get("http://localhost:5000/famille"),
+        const [ categoriesRes] = await Promise.all([
+          
           axios.get("http://localhost:5000/categorie"),
         ]);
-        setFamilles(famillesRes.data);
+     
         setCategories(categoriesRes.data);
       } catch (error) {
         console.error("Erreur chargement données:", error);

@@ -102,10 +102,10 @@ const DocumentConsulter = ({ typeDocument }) => {
   }, [filteredDocuments, currentPage, itemsPerPage]);
   console.log(documents)
   // Générer un nouveau document
-const handleGeneration = () => {
+const handleGeneration = async() => {
   if (!selectedDocument) return;
   console.log(selectedDocument);
-
+  console.log(typeAchat);
   const documentData = {
     typeDocument: typeAchat,
     id: selectedDocument._id,
@@ -125,7 +125,7 @@ const handleGeneration = () => {
   };
 
   navigate(`/${typeAchat.toLowerCase().replace(" ", "-")}`, {
-    state: documentData,
+    state:await documentData,
   });
   setOpenModal(false);
 };

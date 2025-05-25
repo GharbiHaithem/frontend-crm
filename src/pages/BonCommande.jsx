@@ -32,7 +32,7 @@ const BonCommandePage = () => {
   } = location.state;
   // console.log("--------------------------------");
    console.log(location.state);
-  const genererFacture = () => {
+  const genererFacture =async () => {
     const data = {
       typeDocument,
       id,
@@ -47,6 +47,7 @@ const BonCommandePage = () => {
     typePaiement,
     commentaire
     };
+    console.log(data)
     // Créer un nouveau document PDF
     const doc = new jsPDF();
  // Formater la date au format local (ex: 21/03/2025)
@@ -132,10 +133,10 @@ const BonCommandePage = () => {
     doc.save(`Facture_${numero}.pdf`);
     console.log('testy');
     console.log(data);
-    axios
+ await  axios
       .put("http://localhost:5000/entetes/devis", data)
       .then((response) => {
-        // console.log(response);
+         console.log(response.data);
         if (response.status === 200) {
           alert("Facture générée avec succès");
           navigate("/Bon%20Commande-consulter");

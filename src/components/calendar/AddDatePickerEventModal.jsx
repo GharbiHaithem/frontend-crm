@@ -79,7 +79,7 @@ const AddDatePickerEventModal = ({
           <LocalizationProvider dateAdapter={AdapterDateFns}>
             <Box mb={2} mt={5}>
               <DateTimePicker
-                label="Start date"
+                label="Date de début"
                 value={start}
                 ampm
                 minutesStep={30}
@@ -104,7 +104,7 @@ const AddDatePickerEventModal = ({
             </Box>
 
             <DateTimePicker
-              label="End date"
+              label="Date de fin"
               disabled={allDay}
               minDate={start}
               minutesStep={30}
@@ -126,7 +126,7 @@ const AddDatePickerEventModal = ({
             options={todos}
             sx={{ marginTop: 4 }}
             getOptionLabel={(option) => option.title}
-            renderInput={(params) => <TextField {...params} label="Todo" />}
+            renderInput={(params) => <TextField {...params} label="Faire" />}
           />
         </Box>
       </DialogContent>
