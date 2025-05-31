@@ -39,7 +39,8 @@ export default function Article() {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedArticleId, setSelectedArticleId] = useState(null);
   const navigate = useNavigate();
-
+  const [code, setCode] = useState(null);
+    const [libelle, setLibelle] = useState(null);
    // Fetch fournisseurs from the backend
    const fetchArticles = async () => {
     try {
@@ -92,12 +93,18 @@ export default function Article() {
       [name]: value,
     }));
   };
-
+console.log(filters)
   // Apply filters
-  const applyFilters = () => {
-    setPage(1); // Reset to the first page when applying filters
-    fetchArticles();
-    handleFilterClose();
+  const applyFilters = async(e) => {
+    // setPage(1); // Reset to the first page when applying filters
+    // fetchArticles();
+    // handleFilterClose();
+    e.preventDefault()
+    console.log(code)
+      console.log(libelle)
+      await axios.get(`http://localhost:5000/articles/filtrationArticle?code=${code}&libelle=${libelle}`).then((result)=>{
+        setArticles(result.data)
+      })
   };
 
   // Handle next page
@@ -154,12 +161,17 @@ export default function Article() {
                 component={Link}
                 to="/Article/create"
                 startIcon={<Add style={{ fontSize: "1.5rem" }} />}
-                style={{
-                  marginRight: "10px",
-                  borderRadius: "20px",
-                  fontSize: "1rem",
-                  padding: "10px 20px",
-                }}
+                 sx={{
+    mr: "10px",
+    borderRadius: "20px",
+    fontSize: "1rem",
+    px: "20px",
+    py: "10px",
+    backgroundColor: "#1976d2", // couleur primaire par défaut
+    "&:hover": {
+      backgroundColor: "white", // empêche le hover
+    },
+  }}
               >
                 Ajouter un article
               </Button>
@@ -204,9 +216,10 @@ export default function Article() {
                           fontWeight: "bold",
                           textAlign: "center",
                           color: "#1976d2",
-                          fontSize: "1.2rem",
-                          padding: "20px",
+                          fontSize: "0.8rem",
+                          padding: "10px",
                         }}
+                        
                       >
                         {header}
                       </TableCell>
@@ -216,19 +229,19 @@ export default function Article() {
                 <TableBody>
                   {Array.isArray(articles) && articles.map((article) => (
                     <TableRow key={article._id} hover style={{ height: "60px" }}>
-                      <TableCell style={{ fontSize: "1.1rem", padding: "20px" }}>
+                      <TableCell style={{ fontSize: "0.8rem", padding: "10px" }}>
                         {article.code}
                       </TableCell>
-                      <TableCell style={{ fontSize: "1.1rem", padding: "20px" }}>
+                      <TableCell style={{ fontSize: "0.8rem", padding: "10px" }}>
                         {article.libelle}
                       </TableCell>
-                      <TableCell style={{ fontSize: "1.1rem", padding: "20px" }}>
+                      <TableCell style={{ fontSize: "0.8rem", padding: "10px" }}>
                         {article.Nombre_unite}
                       </TableCell>
-                      <TableCell style={{ fontSize: "1.1rem", padding: "20px" }}>
+                      <TableCell style={{ fontSize: "0.8rem", padding: "10px" }}>
                         {article.Nature}
                       </TableCell>
-                      <TableCell style={{ fontSize: "1.1rem", padding: "20px" }}>
+                      <TableCell style={{ fontSize: "0.8rem", padding: "10px" }}>
                         {article.image_article ? (
                           <img
                             src={`data:image/jpeg;base64,${Buffer.from(
@@ -311,8 +324,8 @@ export default function Article() {
               <TextField
                 name="code"
                 label="Code"
-                value={filters.code || ""}
-                onChange={handleFilterChange}
+                value={code}
+                onChange={(e)=>setCode(e.target.value)}
                 fullWidth
                 margin="normal"
                 variant="outlined"
@@ -322,8 +335,8 @@ export default function Article() {
               <TextField
                 name="libelle"
                 label="Libellé"
-                value={filters.libelle || ""}
-                onChange={handleFilterChange}
+                value={libelle}
+                onChange={(e)=>setLibelle(e.target.value)}
                 fullWidth
                 margin="normal"
                 variant="outlined"

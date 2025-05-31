@@ -70,7 +70,15 @@ export default function CreateCategorieArticle() {
               borderBottom: "1px solid #ddd",
             }}
           >
-            <Typography variant="h5" gutterBottom>
+            <Typography variant="h5" gutterBottom style={{
+                          fontWeight: "bold",
+                          textAlign: "start",
+                          color: "#1976d2",
+                          fontSize: "1.8rem",
+                          padding: "10px",
+                          background:"white",
+                          width:"100%"
+                        }}>
               Créer une Catégorie d'Articles
             </Typography>
           </Box>

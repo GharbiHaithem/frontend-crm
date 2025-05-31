@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppStore } from "../appStore";
 import { useAuth } from "../contexts/AuthContext";
-
+import { FaFileLines } from "react-icons/fa6";
+import { FaSignOutAlt } from "react-icons/fa";
 export default function Navbar() {
   const user = JSON.parse(localStorage.getItem("user"));
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -169,9 +170,13 @@ console.log(user)
                   />
                 </svg>
                 <div className="hidden md:block text-left">
-                  <span className="block text-sm font-medium text-gray-700">
+                <div className="flex flex-col gap-1">
+                    <span className="block translate-y-2 text-sm font-medium text-gray-700">
                     {userName}
                   </span>
+                {user.role==="admin"  &&  <span  className="block mt-1 text-xs font-medium bg-blue-100 text-blue-800 text-center uppercase rounded-lg  ">{user.role}</span>}
+                             {user.role==="represantant"  &&  <span  className="block mt-1 text-xs font-medium bg-yellow-100 text-yellow-800 text-center p-1 uppercase rounded-lg  ">{user.role} commercial</span>}
+                </div>
                 </div>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -191,25 +196,20 @@ console.log(user)
 
               {/* Profile dropdown menu */}
               {profileMenuOpen && (
-                <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                <div className="origin-top-right absolute right-0 mt-2 w-[max-content] rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
                   <div className="py-1">
                     <Link
                       to="/InfoProfil"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className=" px-2  py-2 text-sm font-light flex items-center gap-1 text-gray-700 hover:bg-gray-100"
                     >
-                      Your Profile
+                <FaFileLines  className="text-sm" />   Information du profil
                     </Link>
-                    <a
-                      href="#settings"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Settings
-                    </a>
+                 
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="w-full text-left flex items-center gap-1  font-light  px-2 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
-                      Sign out
+                  <FaSignOutAlt className="text-sm" />    Déconnexion
                     </button>
                   </div>
                 </div>

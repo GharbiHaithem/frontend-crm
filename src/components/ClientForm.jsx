@@ -32,6 +32,8 @@ const validationSchema = Yup.object().shape({
 const ClientForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+const[erreurCode,setErreurCode]=useState(null)
+
 
   const formik = useFormik({
     initialValues: {
@@ -54,9 +56,11 @@ const ClientForm = () => {
         if (id) {
           await axios.put(`http://localhost:5000/clients/${id}`, values);
         } else {
-          await axios.post('http://localhost:5000/clients', values);
+          await axios.post('http://localhost:5000/clients', values)
+          .then(()=>   navigate('/clients'))
+          .catch((response)=>setErreurCode(response.response.data.message))
         }
-        navigate('/clients');
+     
       } catch (error) {
         console.error('Erreur lors de la soumission du formulaire', error);
       }
@@ -110,11 +114,19 @@ const ClientForm = () => {
         onSubmit={formik.handleSubmit}
         sx={{ display: 'flex', flexDirection: 'column', marginTop: 4 }}
       >
-        <Typography variant="h5" sx={{ marginBottom: 3 }}>
+        <Typography variant="h5" sx={{ marginBottom: 3 }}  style={{
+                          fontWeight: "bold",
+                          textAlign: "start",
+                          color: "#1976d2",
+                          fontSize: "1.8rem",
+                          padding: "10px",
+                          background:"white",
+                          width:"100%"
+                        }}>
           {id ? 'Modifier' : 'Ajouter'} un client
         </Typography>
 
-        <Typography variant="h6" sx={{ marginBottom: 2 }}>Informations sur l'adresse</Typography>
+       
 
         <Grid container spacing={2}>
           {Object.keys(formik.values)
@@ -144,6 +156,9 @@ const ClientForm = () => {
                     }
                   }}
                 />
+                {erreurCode && key === 'code' && (
+          <span className="text-red-500 text-xs font-light">{erreurCode}</span>
+        )}
               </Grid>
             ))}
           

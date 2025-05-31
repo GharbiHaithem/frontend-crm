@@ -33,7 +33,7 @@ function Signup() {
 
     // Validate form
     if (!name || !email || !password) {
-      setError("Name, email and password are required");
+      setError("Le nom, l'e-mail et le mot de passe sont obligatoires");
       return;
     }
 
@@ -45,7 +45,7 @@ function Signup() {
       const { success, message } = response.data;
 
       if (success) {
-        toast.success(message || "Account created successfully!");
+        toast.success(message || "Compte créé avec succès !");
 
         // Redirect after a short delay to allow toast to be seen
         setTimeout(() => {
@@ -54,7 +54,7 @@ function Signup() {
       }
     } catch (err) {
       const errorMessage =
-        err.response?.data?.message || "Registration failed. Please try again.";
+        err.response?.data?.message || "L'inscription a échoué. Veuillez réessayer.";
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -68,7 +68,7 @@ function Signup() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
+         Créez votre compte
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Or{" "}
@@ -76,7 +76,7 @@ function Signup() {
               to="/login"
               className="font-medium text-primary-600 hover:text-primary-500"
             >
-              sign in to your existing account
+Connectez-vous à votre compte existant
             </Link>
           </p>
         </div>
@@ -110,7 +110,7 @@ function Signup() {
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <label htmlFor="name" className="sr-only">
-                Full name
+              Nom et prénom
               </label>
               <input
                 id="name"
@@ -119,14 +119,14 @@ function Signup() {
                 autoComplete="name"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
-                placeholder="Full name"
+                placeholder="Nom et prénom"
                 value={signupInfo.name}
                 onChange={handleChange}
               />
             </div>
             <div>
               <label htmlFor="email" className="sr-only">
-                Email address
+               Adresse email
               </label>
               <input
                 id="email"
@@ -135,14 +135,14 @@ function Signup() {
                 autoComplete="email"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
+                placeholder="Adresse email"
                 value={signupInfo.email}
                 onChange={handleChange}
               />
             </div>
             <div>
               <label htmlFor="password" className="sr-only">
-                Password
+             Mot de passe
               </label>
               <input
                 id="password"
@@ -151,7 +151,7 @@ function Signup() {
                 autoComplete="new-password"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
+                placeholder="Mot de passe"
                 value={signupInfo.password}
                 onChange={handleChange}
               />
@@ -204,25 +204,25 @@ function Signup() {
                   </svg>
                 </span>
               )}
-              {isLoading ? "Creating account..." : "Create account"}
+              {isLoading ? "Création de compte..." : "Créer un compte"}
             </button>
           </div>
 
           <div className="text-sm text-center">
             <p className="text-gray-600">
-              By signing up, you agree to our{" "}
+          En vous inscrivant, vous acceptez nos conditions d'utilisation.{" "}
               <a
                 href="#"
                 className="font-medium text-primary-600 hover:text-primary-500"
               >
-                Terms of Service
+        Conditions d'utilisation
               </a>{" "}
-              and{" "}
+              et{" "}
               <a
                 href="#"
                 className="font-medium text-primary-600 hover:text-primary-500"
               >
-                Privacy Policy
+              politique de confidentialité
               </a>
             </p>
           </div>

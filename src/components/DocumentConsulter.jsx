@@ -27,8 +27,9 @@ import {
   Dialog,
   Typography,
   Menu,
- 
+
 } from "@mui/material";
+import * as Yup from "yup";
 import CircularProgress from '@mui/material/CircularProgress';
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -42,7 +43,23 @@ import autoTable from "jspdf-autotable";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import ProgressBarPending from "./ProgressBarPending/ProgressBarPending";
+import { useFormik } from "formik";
+const validationSchema = Yup.object().shape({
+  numero: Yup.string().required("Le numéro est obligatoire"),
+  date: Yup.date().required("La date est obligatoire"),
+  clientDetails: Yup.object().shape({
+    code: Yup.string().required("Le code client est obligatoire"),
+    adresse: Yup.string().required("adresse client est obligatoire"),
+    matricule: Yup.string().required("matricule client est obligatoire"),
+    raisonSociale: Yup.string().required("raisonSociale client est obligatoire"),
+    telephone: Yup.string().required("telephone client est obligatoire"),
+  }),
+  refBCC: Yup.string().required("refBCC  est obligatoire"),
+  pointVente: Yup.string().required("pointVente  est obligatoire"),
+  typePaiement: Yup.string().required("typePaiement  est obligatoire"),
+  commentaire: Yup.string().required("commentaire  est obligatoire"),
 
+});
 const DocumentConsulter = ({ typeDocument }) => {
   const [documents, setDocuments] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -54,7 +71,56 @@ const DocumentConsulter = ({ typeDocument }) => {
   const itemsPerPage = 10;
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+  const formik = useFormik({
+    initialValues: {
+      numero: "",
+      date: "",
+      client: "",
+      totalHT: 0,
+      totalTTC: 0,
+      refBCC: "",
+      pointVente: "",
+      typePaiement: "",
+      commentaire: "",
+      type_achat: typeDocument,
+      clientDetails: {
+        code: "",
+        adresse: "",
+        matricule: "",
+        raisonSociale: "",
+        telephone: "",
+      },
+      lignes: [
+        {
+          quantite: 1,
+          prixHT: 0,
+          remise: 0,
+          tva: 0,
+          prixTTC: 0,
 
+          libelleArticle: "",
+          codeArticle: "",
+        },
+      ],
+    },
+    validationSchema,
+    onSubmit: async (values) => {
+      alert(JSON.stringify(2, null, values))
+      await handleGeneration()
+    }
+  })
+  const [numEntete, setNumEntete] = useState({
+    success: '',
+    err: ''
+  });
+  const handelnumeroEntete = async (num) => {
+    console.log(num)
+
+    await axios.post(`http://localhost:5000/entetes/verifyNumero`, { numero: num }).then((result) => {
+      setNumEntete({ success: result.data.message, err: "" })
+      formik.setFieldValue('numero', num)
+    }).catch((erreur) => setNumEntete({ success: "", err: erreur.response.data.message }))
+  }
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget); // Ouvre le menu
   };
@@ -102,33 +168,30 @@ const DocumentConsulter = ({ typeDocument }) => {
   }, [filteredDocuments, currentPage, itemsPerPage]);
   console.log(documents)
   // Générer un nouveau document
-const handleGeneration = async() => {
-  if (!selectedDocument) return;
-  console.log(selectedDocument);
-  console.log(typeAchat);
-  const documentData = {
-    typeDocument: typeAchat,
-    id: selectedDocument._id,
-    numero: selectedDocument.numero?.replace(
-      /^DV/,
-      typeAchat === "Bon Commande" ? "BC" : "BL"
-    ),
-    date: new Date(), // <-- Remplace ici par la date système actuelle
-    client: selectedDocument?.client,
-    totalHT: selectedDocument.totalHT,
-    totalTTC: selectedDocument.totalTTC,
-    lignes: selectedDocument.lignes || [],
-    referenceCommande: selectedDocument.referenceCommande || "",
-    pointVente: selectedDocument.pointVente || "",
-    typePaiement: selectedDocument.typePaiement || "",
-    commentaire: selectedDocument.commentaire || "",
-  };
+  const handleGeneration = async () => {
+    if (!selectedDocument) return;
+    console.log(selectedDocument);
+    console.log(typeAchat);
+    const documentData = {
+      typeDocument: typeAchat,
+      id: selectedDocument._id,
+      numero: formik.values.numero,
+      date: formik.values.date, // <-- Remplace ici par la date système actuelle
+      client: selectedDocument?.client,
+      totalHT: selectedDocument.totalHT,
+      totalTTC: selectedDocument.totalTTC,
+      lignes: selectedDocument.lignes || [],
+      referenceCommande: selectedDocument.referenceCommande || "",
+      pointVente: formik.values.pointVente || "",
+      typePaiement: selectedDocument.typePaiement || "",
+      commentaire: selectedDocument.commentaire || "",
+    };
 
-  navigate(`/${typeAchat.toLowerCase().replace(" ", "-")}`, {
-    state:await documentData,
-  });
-  setOpenModal(false);
-};
+    navigate(`/${typeAchat.toLowerCase().replace(" ", "-")}`, {
+      state: await documentData,
+    });
+    setOpenModal(false);
+  };
 
   // Afficher les détails d'un document
   const handleViewDetails = (id) => {
@@ -305,53 +368,120 @@ const handleGeneration = async() => {
 
     return () => clearTimeout(timer);
   };
-  const[startGeneration,setStartGeneration] = useState(false)
-  const generateFacture =async(document)=>{
+  const [startGeneration, setStartGeneration] = useState(false)
+  const generateFacture = async (document) => {
     setStartGeneration(true)
     console.log(document)
-      setTimeout(async () => {
-              await axios
-                .post("http://localhost:5000/facture/create", document)
-                .then((res) => {
-                  console.log(res);
-                });
-            }, 1000);
-         await  axios.delete( `http://localhost:5000/entetes/${document._id}`)
-         setTimeout(()=>{
-          navigate('/factures')
-         },1000)
+    setTimeout(async () => {
+      await axios
+        .post("http://localhost:5000/facture/create", document)
+        .then((res) => {
+          console.log(res);
+        });
+    }, 1000);
+    await axios.delete(`http://localhost:5000/entetes/${document._id}`)
+    setTimeout(() => {
+      navigate('/factures')
+    }, 1000)
   }
-    console.log(startGeneration)
-    const[code,setCode] = useState(null)
-const handleFilter = async () => {
-  let url = `http://localhost:5000/entetes/searchFilter?typeDocument=${encodeURIComponent(typeDocument)}`;
+  console.log(startGeneration)
+  const [code, setCode] = useState(null)
+  const handleFilter = async () => {
+    let url = `http://localhost:5000/entetes/searchFilter?typeDocument=${encodeURIComponent(typeDocument)}`;
 
-  if (code) {
-    url += `&code=${encodeURIComponent(code)}`;
-  }
+    if (code) {
+      url += `&code=${encodeURIComponent(code)}`;
+    }
 
-if (date) {
-  const formattedDate = new Date(date).toLocaleDateString('en-CA'); // "2024-05-22"
-  url += `&date=${encodeURIComponent(formattedDate)}`;
-}
+    if (date) {
+      const formattedDate = new Date(date).toLocaleDateString('en-CA'); // "2024-05-22"
+      url += `&date=${encodeURIComponent(formattedDate)}`;
+    }
 
-  try {
-    const res = await fetch(url);
-    const result = await res.json();
-    setDocuments(result);
-  } catch (error) {
-    console.error("Erreur lors du filtrage :", error);
-  }
-};
+    try {
+      const res = await fetch(url);
+      const result = await res.json();
+      setDocuments(result);
+    } catch (error) {
+      console.error("Erreur lors du filtrage :", error);
+    }
+  };
+  const [generateDocument, setGenerateDocument] = useState(false)
 
+  const generateNumero = (prefix, y, m, d, count) => {
+    return `${prefix}${y}${m}${d}${String(count).padStart(3, "0")}`;
+  };
+  const handelnumero = async (date, type_achat) => {
+    if (!date) return;
+
+    const d = new Date(date);
+    const y = d.getFullYear().toString().slice(-2);
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const formattedDate = `${d.getFullYear()}-${m}-${day}`;
+console.log(type_achat)
+    const prefix = type_achat === "Devis" ? "DV" : type_achat === "Bon Commande" ? "BC" : "BL";
+    const prefixPV = "PV";
+
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/entetes/total-par-date/${type_achat}/${formattedDate}`
+      );
+
+      let count = response.data.count || 0;
+      let numeroValide = false;
+      let numero = "";
+
+      while (!numeroValide) {
+        count++;
+        numero = generateNumero(prefix, y, m, day, count);
+
+        try {
+          await axios.post(`http://localhost:5000/entetes/verifyNumero`, { numero });
+          numeroValide = true; // si pas d'erreur, c’est OK
+
+        } catch (error) {
+          if (error.response?.data?.message !== "Numero reservé pour autre devis") {
+            console.error("Erreur lors de la vérification :", error);
+            break;
+          }
+          // sinon, continue la boucle pour essayer le suivant
+        }
+      }
+
+      formik.setFieldValue("numero", numero);
+      formik.setFieldValue("pointVente", generateNumero(prefixPV, y, m, day, count));
+
+    } catch (error) {
+      console.error("Erreur globale génération numéro :", error);
+    }
+  };
+  useEffect(() => {
+    if (formik.values.date) {
+      handelnumero(formik.values.date, typeAchat);
+      handelnumeroEntete(formik.values.numero)
+    }
+
+
+  }, [formik.values.date, typeDocument, formik.values.numero]);
   return (
     <>
       <Navbar />
       <Box sx={{ display: "flex" }}>
         <Sidenav />
-        <Box component="main" sx={{ flexGrow: 1, p: 3, paddingTop: "50px" }}>
-          <h1>Consultation {typeDocument}</h1>
-          {typeDocument !== 'Facture' && <div className="flex items-center gap-5">
+        <Box component="main" sx={{ flexGrow: 1, p: 3, paddingTop: "10px" }}>
+          <Typography
+            variant="h4"
+            style={{
+              fontWeight: "bold",
+              color: "#1976d2",
+              fontSize: "2rem",
+            }}
+          >
+
+
+            Consultation {typeDocument}  </Typography>
+          {typeDocument !== 'Facture' && <div className="flex items-center my-1 gap-5">
             <Button
               variant="contained"
               color="primary"
@@ -397,9 +527,9 @@ if (date) {
                 <TableRow>
                   <TableCell>Numéro</TableCell>
                   <TableCell>Date</TableCell>
-                
-                   <TableCell>Client Code</TableCell>
-                     <TableCell>Client Name</TableCell>
+
+                  <TableCell>Client Code</TableCell>
+                  <TableCell>Client Name</TableCell>
                   <TableCell>Total HT</TableCell>
                   <TableCell>Total TTC</TableCell>
                   <TableCell>Actions</TableCell>
@@ -412,14 +542,14 @@ if (date) {
                     <TableCell>
                       {new Date(doc.date).toLocaleDateString()}
                     </TableCell>
-                         <TableCell>{doc?.client?.code}</TableCell>
+                    <TableCell>{doc?.client?.code}</TableCell>
                     <TableCell>
 
                       {typeDocument === "Facture"
                         ? doc?.client?.nom_prenom
                         : doc.client?.raison_social}
                     </TableCell>
-                
+
                     <TableCell>{(doc.totalHT || 0).toFixed(2)}</TableCell>
                     <TableCell>{(doc.totalTTC || 0).toFixed(2)}</TableCell>
                     <TableCell>
@@ -454,7 +584,7 @@ if (date) {
                             setSelectedDocument(doc);
                             if (typeDocument !== "Bon Commande" && typeDocument !== "Bon Livraison") {
                               setOpenModal(true);
-                            }else{
+                            } else {
                               generateFacture(doc)
                             }
 
@@ -512,7 +642,115 @@ if (date) {
             </DialogContent>
             <DialogActions>
               <Button onClick={() => setOpenModal(false)}>Annuler</Button>
-              <Button onClick={handleGeneration} color="primary">
+              <Button onClick={() => {
+                setGenerateDocument(true)
+                setOpenModal(false)
+              }} color="primary">
+                Générer
+              </Button>
+            </DialogActions>
+          </Dialog>
+          <Dialog className="w-full" open={generateDocument} onClose={() => setGenerateDocument(false)}>
+            <DialogTitle>
+              <Typography
+                variant="h6"
+                style={{
+                  fontWeight: "semiBold",
+                  color: "#1976d2",
+                  fontSize: "1.3rem",
+                }}
+              >
+                Generer vers {typeAchat}
+
+              </Typography>
+            </DialogTitle>
+            <DialogContent>
+              <DatePicker
+                label={`Sélectionnez une date ${typeAchat}`} 
+
+
+                className="w-full font-light mt-2"
+                value={formik.values.date}
+                onChange={(newValue) => {
+                  formik.setFieldValue('date', newValue); // ✅ mettre à jour formik
+                  handelnumero(newValue, typeAchat);   // ✅ ta logique perso
+               }}
+                InputLabelProps={{ shrink: true }}
+                error={formik.touched.date && Boolean(formik.errors.date)}
+                helperText={formik.touched.date && formik.errors.date}
+                size="small"
+              />
+              <TextField
+                label="Numéro"
+                name="numero"
+                fullWidth
+                margin="normal"
+                value={formik.values.numero}
+                onChange={(e) => handelnumeroEntete(e.target.value)}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: numEntete.success
+                        ? '#34D399' // Vert-400
+                        : numEntete.err ? '#F87171' : '' // Rouge-400
+                    },
+                    '&:hover fieldset': {
+                      borderColor: numEntete.success
+                        ? '#34D399' // Vert-400
+                        : numEntete.err ? '#F87171' : '' // Rouge-400
+
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: numEntete.success
+                        ? '#34D399' // Vert-400
+                        : numEntete.err ? '#F87171' : ''// Rouge-400
+
+                    }
+                  }
+                }}
+
+                error={
+                  formik.touched.numero &&
+                  Boolean(formik.errors?.numero || numEntete.err)
+                }
+                helperText={
+                  numEntete.success ? (
+                    <span className="text-green-600">{numEntete.success}</span>
+                  ) : (
+                    (formik.touched.numero && formik.errors?.numero) ||
+                    <span className="text-red-600">{numEntete.err}</span>
+                  )
+                }
+                size="small"
+              />
+              <TextField
+                label="Point de Vente"
+                name="pointVente"
+                fullWidth
+                margin="normal"
+                value={formik.values.pointVente}
+                onChange={formik.handleChange}
+                size="small"
+                disabled={true}
+                error={
+                  formik.touched?.pointVente &&
+                  Boolean(formik.errors?.pointVente)
+                }
+                helperText={
+                  formik.touched.pointVente &&
+                  formik.errors.pointVente
+                }
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button variant="outlined" size="small" color="error" onClick={() => setGenerateDocument(false)}>Annuler</Button>
+              <Button onClick={() => {
+                handleGeneration()
+                setGenerateDocument(false)
+              }} color="primary"
+              variant="outlined" size="small"
+              disabled={!formik.values.date && !formik.values.numero}
+              >
                 Générer
               </Button>
             </DialogActions>
@@ -540,8 +778,8 @@ if (date) {
               <TextField
                 name="client"
                 label="Client"
-                  value={code}
-                  onChange={(e)=>setCode(e.target.value)}
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
                 fullWidth
                 margin="normal"
                 variant="outlined"
@@ -573,7 +811,7 @@ if (date) {
             </Paper>
           </Menu>
         </Box>
-      {startGeneration && <ProgressBarPending   setStartGeneration={setStartGeneration} />}
+        {startGeneration && <ProgressBarPending setStartGeneration={setStartGeneration} />}
       </Box>
     </>
   );

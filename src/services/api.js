@@ -114,5 +114,7 @@ export const eventService = {
   getById: (id) => api.get(`/api/events/${id}/show`),
   create: (eventData) => api.post("/api/events", eventData),
 };
-
+export const factureService={
+  getAllFacture: () => api.get('/facture/all'),
+}
 export default api;

@@ -49,7 +49,15 @@ export default function CreateFamilleArticle() {
         <Sidenav />
         <Box component="main" sx={{ flexGrow: 1, p: 3, overflow: "auto", maxHeight: "100vh" }}>
           <Box sx={{ position: "sticky", top: 0, zIndex: 2, backgroundColor: "#fff", paddingBottom: "10px", borderBottom: "1px solid #ddd" }}>
-            <h2>Créer une Famille des Articles</h2>
+            <h2 style={{
+                          fontWeight: "bold",
+                          textAlign: "start",
+                          color: "#1976d2",
+                          fontSize: "1.8rem",
+                          padding: "10px",
+                          background:"white",
+                          width:"100%"
+                        }}>Créer une Famille des Articles</h2>
           </Box>
 
           <form onSubmit={formik.handleSubmit}>

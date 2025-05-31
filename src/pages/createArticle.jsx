@@ -2,26 +2,13 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import {
-  TextField,
-  Button,
-  Grid,
-  Box,
-  MenuItem,
-  Checkbox,
-  FormControlLabel,
-  TextareaAutosize,
-  FormHelperText,
-  Typography,
-  Paper,
-} from "@mui/material";
+import { useNavigate, useParams } from "react-router-dom";
 import Sidenav from "../components/Sidenav";
 import Navbar from "../components/Navbar";
-import { useNavigate, useParams } from "react-router-dom";
+import { Typography } from "@mui/material";
 
 const validationSchema = Yup.object().shape({
   libelle: Yup.string().required("Ce champ est requis"),
-
   libeleCategorie: Yup.string().required("Ce champ est requis"),
   Nombre_unite: Yup.number().required("Ce champ est requis").positive(),
   tva: Yup.number().required("Ce champ est requis"),
@@ -32,530 +19,423 @@ const validationSchema = Yup.object().shape({
   marge: Yup.number().required("Ce champ est requis"),
   prixht: Yup.number().required("Ce champ est requis").positive(),
   prix_totale_concré: Yup.number().required("Ce champ est requis").positive(),
-  
   configuration: Yup.string().required("Ce champ est requis"),
-
   Nature: Yup.string().required("Ce champ est requis"),
   prixmin: Yup.number().required("Ce champ est requis"),
   prixmax: Yup.number().required("Ce champ est requis"),
   tva_achat: Yup.number().required("Ce champ est requis"),
   movement_article: Yup.string().required("Ce champ est requis"),
   prix_achat_initiale: Yup.number(),
-
 });
 
 export default function CreateArticle() {
   const navigate = useNavigate();
-  const [familles, setFamilles] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [fournisseurs, setFournisseurs] = useState([]);
-  const {id} = useParams()
-  const[article,setArticle]  = useState({})
-  useEffect(()=>{
-    if (id) {
-    axios.get(`http://localhost:5000/articles/${id}`)
-      .then((response) => {
-        const articleData = response.data;
-        setArticle(articleData);
-        
-      
-      });
-  }
- },[id])
-  console.log(article)
-  const formik = useFormik({
-    initialValues: {
-      libelle:id ? article.libelle : "",
-  
-      libeleCategorie:id ? article.libeleCategorie?._id :"",
-      Nombre_unite:id ? article.Nombre_unite : 0,
-      tva: id ? article.tva : 0,
-      type:id ? article.type : "",
-      prix_brut:id ? article.prix_brut : 0,
-      remise:id ? article.remise :  0,
-      prix_net:id ? article.prix_net : 0,
-      marge:id ? article.marge : 0,
-      prixht:id ? article.prixht : 0,
-      prix_totale_concré:id ? article.prix_totale_concré : 0,
-      gestion_configuration:id ? article.gestion_configuration : "",
-      configuration:id ? article.configuration : "",
-      serie: false,
-      series: [],
-      lib_fournisseur: id ? article.lib_fournisseur :"",
-      Nature:  id ? article.Nature :"",
-      image_article:id ? article.image_article : null,
-      prixmin:id ? article.prixmin :  0,
-      prixmax:id ? article.prixmax : 0,
-      user_Connectée:id ? article.user_Connectée : "",
-      action_user_connecté:id ? article.action_user_connecté :  "",
-      date_modif: new Date().toISOString().split("T")[0],
-      prix_achat_initiale:id ? article.prix_achat_initiale : 0,
-      tva_achat:id ? article.tva_achat :  0,
-      dimension_article: false,
-      longueur: id ? article.longueur :0,
-      largeur:id ? article.largeur : 0,
-      hauteur: id ? article.hauteur :0,
-      movement_article:id ? article.movement_article : "",
-    },
-    validationSchema,
-    enableReinitialize:true,
-  // Modifiez la soumission du formulaire
-onSubmit: async (values) => {
-  try {
-   
-    const formData = new FormData();
-    
-    // Ajout de tous les champs au FormData
-    Object.keys(values).forEach((key) => {
-      if (key === "image_article" && values[key]) {
-        formData.append(key, values[key]);
-      } else if (values[key] !== null && values[key] !== undefined) {
-        // Convertir les valeurs en string pour FormData
-        formData.append(key, String(values[key]));
-      }
-    });
-   console.log(formData)
-    if (!id) {
-      const response = await axios.post("http://localhost:5000/articles", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      alert("Article créé avec succès !");
-      navigate("/Articles");
-    } else {
-      // Ajoutez un log pour vérifier les données envoyées
-      console.log("Données envoyées:", {
-     
-        libeleCategorie: values.libeleCategorie
-      });
+  const { id } = useParams();
+  const [article, setArticle] = useState({});
 
-      await axios.put(`http://localhost:5000/articles/${id}`,  values);
-      alert("Article édité avec succès !");
-      navigate("/Articles");
+  useEffect(() => {
+    if (id) {
+      axios.get(`http://localhost:5000/articles/${id}`)
+        .then((response) => {
+          setArticle(response.data);
+        });
     }
-  } catch (error) {
-    console.error("Erreur:", error.response?.data || error.message);
-    alert("Erreur lors de la mise à jour: " + (error.response?.data?.message || error.message));
-  }
-},
-    
-  })
-  console.log("Erreurs de validation:", formik.errors); // Affiche toutes les erreurs
+  }, [id]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [ categoriesRes] = await Promise.all([
-          
-          axios.get("http://localhost:5000/categorie"),
-        ]);
-     
+        const categoriesRes = await axios.get("http://localhost:5000/categorie");
         setCategories(categoriesRes.data);
       } catch (error) {
         console.error("Erreur chargement données:", error);
       }
     }
     fetchData();
-    
   }, [id]);
- useEffect(()=>{
-    if (id) {
-    axios.get(`http://localhost:5000/articles/${id}`)
-      .then((response) => {
-        const articleData = response.data;
-        setArticle(articleData);
-        
-      
-      });
-  }
- },[id])
+
+  const formik = useFormik({
+    initialValues: {
+      libelle: id ? article.libelle : "",
+      libeleCategorie: id ? article.libeleCategorie?._id : "",
+      Nombre_unite: id ? article.Nombre_unite : 0,
+      tva: id ? article.tva : 0,
+      type: id ? article.type : "",
+      prix_brut: id ? article.prix_brut : 0,
+      remise: id ? article.remise : 0,
+      prix_net: id ? article.prix_net : 0,
+      marge: id ? article.marge : 0,
+      prixht: id ? article.prixht : 0,
+      prix_totale_concré: id ? article.prix_totale_concré : 0,
+      gestion_configuration: id ? article.gestion_configuration : "",
+      configuration: id ? article.configuration : "",
+      serie: false,
+      series: [],
+      lib_fournisseur: id ? article.lib_fournisseur : "",
+      Nature: id ? article.Nature : "",
+      image_article: id ? article.image_article : null,
+      prixmin: id ? article.prixmin : 0,
+      prixmax: id ? article.prixmax : 0,
+      user_Connectée: id ? article.user_Connectée : "",
+      action_user_connecté: id ? article.action_user_connecté : "",
+      date_modif: new Date().toISOString().split("T")[0],
+      prix_achat_initiale: id ? article.prix_achat_initiale : 0,
+      tva_achat: id ? article.tva_achat : 0,
+      dimension_article: false,
+      longueur: id ? article.longueur : 0,
+      largeur: id ? article.largeur : 0,
+      hauteur: id ? article.hauteur : 0,
+      movement_article: id ? article.movement_article : "",
+    },
+    validationSchema,
+    enableReinitialize: true,
+    onSubmit: async (values) => {
+      try {
+        const formData = new FormData();
+        Object.keys(values).forEach((key) => {
+          if (key === "image_article" && values[key]) {
+            formData.append(key, values[key]);
+          } else if (values[key] !== null && values[key] !== undefined) {
+            formData.append(key, String(values[key]));
+          }
+        });
+
+        if (!id) {
+          await axios.post("http://localhost:5000/articles", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
+          alert("Article créé avec succès !");
+        } else {
+          await axios.put(`http://localhost:5000/articles/${id}`, values);
+          alert("Article édité avec succès !");
+        }
+        navigate("/Articles");
+      } catch (error) {
+        console.error("Erreur:", error.response?.data || error.message);
+        alert("Erreur lors de la mise à jour: " + (error.response?.data?.message || error.message));
+      }
+    },
+  });
+
   const handleFileChange = (event) => {
     formik.setFieldValue("image_article", event.currentTarget.files[0]);
   };
 
   return (
-  <>
+    <>
       <Navbar />
-      <Box height={70} />
-      <Box sx={{ display: "flex" }}>
+      <div className="h-[70px]" />
+      <div className="flex">
         <Sidenav />
-        <Box component="main" sx={{ flexGrow: 1, p: 2 }}>
-          <Paper sx={{ p: 2, mb: 2 }}>
-            <Typography variant="h6" gutterBottom>
+        <main className="flex-1 p-4">
+          <div className="bg-white p-4 mb-4 rounded-lg shadow">
+           <Typography
+                     variant="h4"
+                     style={{
+                       fontWeight: "bold",
+                       color: "#1976d2",
+                       fontSize: "2rem",
+                     }}
+                   >
               {id ? 'Éditer un Article' : 'Créer un Article'}
             </Typography>
             
             <form onSubmit={formik.handleSubmit}>
-              {/* Réduire l'espacement entre les lignes à 2 */}
-              <Grid container spacing={2}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 
                 {/* Section Informations de base */}
-                <Grid item xs={12}>
-                  <Typography variant="subtitle1" gutterBottom sx={{ mt: 1, mb: 1, color: 'text.secondary' }}>
-                    Informations de base
-                  </Typography>
-                </Grid>
+               
                 
-                <Grid item xs={12} md={4}>
-                  <TextField
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Libellé*</label>
+                  <input
                     name="libelle"
-                    label="Libellé*"
-                    fullWidth
-                    size="small"
+                    type="text"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                     value={formik.values.libelle}
                     onChange={formik.handleChange}
-                    error={formik.touched.libelle && Boolean(formik.errors.libelle)}
-                    helperText={formik.touched.libelle && formik.errors.libelle}
                   />
-                </Grid>
+                  {formik.touched.libelle && formik.errors.libelle && (
+                    <p className="mt-1 text-sm text-red-600">{formik.errors.libelle}</p>
+                  )}
+                </div>
                 
-                <Grid item xs={12} md={4}>
-                  <TextField
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Nature*</label>
+                  <input
                     name="Nature"
-                    label="Nature*"
-                    fullWidth
-                    size="small"
+                    type="text"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                     value={formik.values.Nature}
                     onChange={formik.handleChange}
-                    error={formik.touched.Nature && Boolean(formik.errors.Nature)}
-                    helperText={formik.touched.Nature && formik.errors.Nature}
                   />
-                </Grid>
+                  {formik.touched.Nature && formik.errors.Nature && (
+                    <p className="mt-1 text-sm text-red-600">{formik.errors.Nature}</p>
+                  )}
+                </div>
                 
-                <Grid item xs={12} md={4}>
-                  <TextField
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Type*</label>
+                  <input
                     name="type"
-                    label="Type*"
-                    fullWidth
-                    size="small"
+                    type="text"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                     value={formik.values.type}
                     onChange={formik.handleChange}
-                    error={formik.touched.type && Boolean(formik.errors.type)}
-                    helperText={formik.touched.type && formik.errors.type}
                   />
-                </Grid>
+                  {formik.touched.type && formik.errors.type && (
+                    <p className="mt-1 text-sm text-red-600">{formik.errors.type}</p>
+                  )}
+                </div>
                 
                 {/* Section Catégorisation */}
-                <Grid item xs={12}>
-                  <Typography variant="subtitle1" gutterBottom sx={{ mt: 2, mb: 1, color: 'text.secondary' }}>
-                    Catégorisation
-                  </Typography>
-                </Grid>
-                
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    name="libelleFamille"
-                    label="Famille*"
-                    fullWidth
-                    size="small"
-                    select
-                    value={formik.values.libelleFamille}
-                    onChange={formik.handleChange}
-                    error={formik.touched.libelleFamille && Boolean(formik.errors.libelleFamille)}
-                    helperText={formik.touched.libelleFamille && formik.errors.libelleFamille}
-                  >
-                    <MenuItem value="">Sélectionnez une famille</MenuItem>
-                    {familles.map((famille) => (
-                      <MenuItem key={famille._id} value={famille._id}>
-                        {famille.designationFamille}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-                
-                <Grid item xs={12} md={6}>
-                  <TextField
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie*</label>
+                  <select
                     name="libeleCategorie"
-                    label="Catégorie*"
-                    fullWidth
-                    size="small"
-                    select
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                     value={formik.values.libeleCategorie}
                     onChange={formik.handleChange}
-                    error={formik.touched.libeleCategorie && Boolean(formik.errors.libeleCategorie)}
-                    helperText={formik.touched.libeleCategorie && formik.errors.libeleCategorie}
                   >
-                    <MenuItem value="">Sélectionnez une catégorie</MenuItem>
+                    <option value="">Sélectionnez une catégorie</option>
                     {categories.map((categorie) => (
-                      <MenuItem key={categorie._id} value={categorie._id}>
+                      <option key={categorie._id} value={categorie._id}>
                         {categorie.designationCategorie}
-                      </MenuItem>
+                      </option>
                     ))}
-                  </TextField>
-                </Grid>
+                  </select>
+                  {formik.touched.libeleCategorie && formik.errors.libeleCategorie && (
+                    <p className="mt-1 text-sm text-red-600">{formik.errors.libeleCategorie}</p>
+                  )}
+                </div>
                 
                 {/* Section Prix */}
-                <Grid item xs={12}>
-                  <Typography variant="subtitle1" gutterBottom sx={{ mt: 2, mb: 1, color: 'text.secondary' }}>
-                    Tarification
-                  </Typography>
-                </Grid>
+                <div className="col-span-full">
+                  <h3 className="text-lg font-medium text-gray-500 mb-2">Tarification</h3>
+                </div>
                 
-                <Grid item xs={12} md={3}>
-                  <TextField
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix Brut*</label>
+                  <input
                     name="prix_brut"
-                    label="Prix Brut*"
-                    fullWidth
-                    size="small"
                     type="number"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                     value={formik.values.prix_brut}
                     onChange={formik.handleChange}
-                    error={formik.touched.prix_brut && Boolean(formik.errors.prix_brut)}
-                    helperText={formik.touched.prix_brut && formik.errors.prix_brut}
                   />
-                </Grid>
+                  {formik.touched.prix_brut && formik.errors.prix_brut && (
+                    <p className="mt-1 text-sm text-red-600">{formik.errors.prix_brut}</p>
+                  )}
+                </div>
                 
-                <Grid item xs={12} md={3}>
-                  <TextField
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Remise %*</label>
+                  <input
                     name="remise"
-                    label="Remise %*"
-                    fullWidth
-                    size="small"
                     type="number"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                     value={formik.values.remise}
                     onChange={formik.handleChange}
-                    error={formik.touched.remise && Boolean(formik.errors.remise)}
-                    helperText={formik.touched.remise && formik.errors.remise}
                   />
-                </Grid>
+                  {formik.touched.remise && formik.errors.remise && (
+                    <p className="mt-1 text-sm text-red-600">{formik.errors.remise}</p>
+                  )}
+                </div>
                 
-                <Grid item xs={12} md={3}>
-                  <TextField
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix NET*</label>
+                  <input
                     name="prix_net"
-                    label="Prix NET*"
-                    fullWidth
-                    size="small"
                     type="number"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                     value={formik.values.prix_net}
                     onChange={formik.handleChange}
-                    error={formik.touched.prix_net && Boolean(formik.errors.prix_net)}
-                    helperText={formik.touched.prix_net && formik.errors.prix_net}
                   />
-                </Grid>
+                  {formik.touched.prix_net && formik.errors.prix_net && (
+                    <p className="mt-1 text-sm text-red-600">{formik.errors.prix_net}</p>
+                  )}
+                </div>
                 
-                <Grid item xs={12} md={3}>
-                  <TextField
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Marge*</label>
+                  <input
                     name="marge"
-                    label="Marge*"
-                    fullWidth
-                    size="small"
                     type="number"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                     value={formik.values.marge}
                     onChange={formik.handleChange}
-                    error={formik.touched.marge && Boolean(formik.errors.marge)}
-                    helperText={formik.touched.marge && formik.errors.marge}
                   />
-                </Grid>
+                  {formik.touched.marge && formik.errors.marge && (
+                    <p className="mt-1 text-sm text-red-600">{formik.errors.marge}</p>
+                  )}
+                </div>
                 
-                <Grid item xs={12} md={4}>
-                  <TextField
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix HT*</label>
+                  <input
                     name="prixht"
-                    label="Prix HT*"
-                    fullWidth
-                    size="small"
                     type="number"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                     value={formik.values.prixht}
                     onChange={formik.handleChange}
-                    error={formik.touched.prixht && Boolean(formik.errors.prixht)}
-                    helperText={formik.touched.prixht && formik.errors.prixht}
                   />
-                </Grid>
+                  {formik.touched.prixht && formik.errors.prixht && (
+                    <p className="mt-1 text-sm text-red-600">{formik.errors.prixht}</p>
+                  )}
+                </div>
                 
-                <Grid item xs={12} md={4}>
-                  <TextField
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">TVA %*</label>
+                  <input
                     name="tva"
-                    label="TVA %*"
-                    fullWidth
-                    size="small"
                     type="number"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                     value={formik.values.tva}
                     onChange={formik.handleChange}
-                    error={formik.touched.tva && Boolean(formik.errors.tva)}
-                    helperText={formik.touched.tva && formik.errors.tva}
                   />
-                </Grid>
+                  {formik.touched.tva && formik.errors.tva && (
+                    <p className="mt-1 text-sm text-red-600">{formik.errors.tva}</p>
+                  )}
+                </div>
                 
-                <Grid item xs={12} md={4}>
-                  <TextField
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Prix Total*</label>
+                  <input
                     name="prix_totale_concré"
-                    label="Prix Total*"
-                    fullWidth
-                    size="small"
                     type="number"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                     value={formik.values.prix_totale_concré}
                     onChange={formik.handleChange}
-                    error={formik.touched.prix_totale_concré && Boolean(formik.errors.prix_totale_concré)}
-                    helperText={formik.touched.prix_totale_concré && formik.errors.prix_totale_concré}
                   />
-                </Grid>
+                  {formik.touched.prix_totale_concré && formik.errors.prix_totale_concré && (
+                    <p className="mt-1 text-sm text-red-600">{formik.errors.prix_totale_concré}</p>
+                  )}
+                </div>
                 
-                {/* Section Fournisseur et Stock */}
-                <Grid item xs={12}>
-                  <Typography variant="subtitle1" gutterBottom sx={{ mt: 2, mb: 1, color: 'text.secondary' }}>
-                    Fournisseur et Stock
-                  </Typography>
-                </Grid>
-                
-                <Grid item xs={12} md={4}>
-                  <TextField
-                    name="lib_fournisseur"
-                    label="Fournisseur"
-                    fullWidth
-                    size="small"
-                    select
-                    value={formik.values.lib_fournisseur}
-                    onChange={formik.handleChange}
-                  >
-                    <MenuItem value="">Aucun fournisseur</MenuItem>
-                    {fournisseurs.map((fournisseur) => (
-                      <MenuItem key={fournisseur._id} value={fournisseur._id}>
-                        {fournisseur.raison_sociale}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-                
-                <Grid item xs={12} md={4}>
-                  <TextField
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Nombre d'unités*</label>
+                  <input
                     name="Nombre_unite"
-                    label="Nombre d'unités*"
-                    fullWidth
-                    size="small"
                     type="number"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                     value={formik.values.Nombre_unite}
                     onChange={formik.handleChange}
-                    error={formik.touched.Nombre_unite && Boolean(formik.errors.Nombre_unite)}
-                    helperText={formik.touched.Nombre_unite && formik.errors.Nombre_unite}
                   />
-                </Grid>
+                  {formik.touched.Nombre_unite && formik.errors.Nombre_unite && (
+                    <p className="mt-1 text-sm text-red-600">{formik.errors.Nombre_unite}</p>
+                  )}
+                </div>
                 
-                <Grid item xs={12} md={4}>
-                  <TextField
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Mouvement*</label>
+                  <input
                     name="movement_article"
-                    label="Mouvement*"
-                    fullWidth
-                    size="small"
+                    type="text"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                     value={formik.values.movement_article}
                     onChange={formik.handleChange}
-                    error={formik.touched.movement_article && Boolean(formik.errors.movement_article)}
-                    helperText={formik.touched.movement_article && formik.errors.movement_article}
                   />
-                </Grid>
+                  {formik.touched.movement_article && formik.errors.movement_article && (
+                    <p className="mt-1 text-sm text-red-600">{formik.errors.movement_article}</p>
+                  )}
+                </div>
                 
                 {/* Section Options */}
-                <Grid item xs={12}>
-                  <Typography variant="subtitle1" gutterBottom sx={{ mt: 2, mb: 1, color: 'text.secondary' }}>
-                    Options
-                  </Typography>
-                </Grid>
+                <div className="col-span-full">
+                  <h3 className="text-lg font-medium text-gray-500 mb-2">Options</h3>
+                </div>
                 
-                <Grid item xs={12} md={6}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        name="serie"
-                        checked={formik.values.serie}
-                        onChange={formik.handleChange}
-                        size="small"
-                      />
-                    }
-                    label="Gestion par série"
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="serie"
+                    checked={formik.values.serie}
+                    onChange={formik.handleChange}
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                   />
-                </Grid>
+                  <label className="ml-2 block text-sm text-gray-700">Gestion par série</label>
+                </div>
                 
-                <Grid item xs={12} md={6}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        name="dimension_article"
-                        checked={formik.values.dimension_article}
-                        onChange={formik.handleChange}
-                        size="small"
-                      />
-                    }
-                    label="Avec dimensions"
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="dimension_article"
+                    checked={formik.values.dimension_article}
+                    onChange={formik.handleChange}
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                   />
-                </Grid>
+                  <label className="ml-2 block text-sm text-gray-700">Avec dimensions</label>
+                </div>
                 
                 {/* Dimensions conditionnelles */}
                 {formik.values.dimension_article && (
                   <>
-                    <Grid item xs={12} md={4}>
-                      <TextField
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Longueur</label>
+                      <input
                         name="longueur"
-                        label="Longueur"
-                        fullWidth
-                        size="small"
                         type="number"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                         value={formik.values.longueur}
                         onChange={formik.handleChange}
                       />
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                      <TextField
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Largeur</label>
+                      <input
                         name="largeur"
-                        label="Largeur"
-                        fullWidth
-                        size="small"
                         type="number"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                         value={formik.values.largeur}
                         onChange={formik.handleChange}
                       />
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                      <TextField
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Hauteur</label>
+                      <input
                         name="hauteur"
-                        label="Hauteur"
-                        fullWidth
-                        size="small"
                         type="number"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                         value={formik.values.hauteur}
                         onChange={formik.handleChange}
                       />
-                    </Grid>
+                    </div>
                   </>
                 )}
                 
                 {/* Section Configuration et Image */}
-                <Grid item xs={12}>
-                  <Typography variant="subtitle1" gutterBottom sx={{ mt: 2, mb: 1, color: 'text.secondary' }}>
-                    Configuration
-                  </Typography>
-                </Grid>
+                <div className="col-span-full">
+                  <h3 className="text-lg font-medium text-gray-500 mb-2">Configuration</h3>
+                </div>
                 
-               <Grid item xs={4}>
-                <TextareaAutosize
-                  name="configuration"
-                  placeholder="Configuration"
-                  minRows={5}
-                  style={{ width: "100%" }}
-                  value={formik.values.configuration}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                    size="small"
-                    className="border border-x-gray-200 px-5 py-5"
-                />
-                {formik.touched.configuration && formik.errors.configuration && (
-                  <FormHelperText error>{formik.errors.configuration}</FormHelperText>
-                )}
-              </Grid>
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Configuration*</label>
+                  <textarea
+                    name="configuration"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    rows="5"
+                    value={formik.values.configuration}
+                    onChange={formik.handleChange}
+                  />
+                  {formik.touched.configuration && formik.errors.configuration && (
+                    <p className="mt-1 text-sm text-red-600">{formik.errors.configuration}</p>
+                  )}
+                </div>
                 
-                <Grid item xs={12} md={4}>
-                  <Button
-                    variant="outlined"
-                    component="label"
-                    fullWidth
-                    size="small"
-                    sx={{ mb: 1 }}
-                  >
-                    Choisir une image
-                    <input
-                      type="file"
-                      hidden
-                      accept="image/*"
-                      onChange={handleFileChange}
-                    />
-                  </Button>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
+                  <div className="mt-1 flex items-center">
+                    <label className="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer">
+                      Choisir une image
+                      <input
+                        type="file"
+                        className="sr-only"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                      />
+                    </label>
+                  </div>
                   {formik.values.image_article && !id && (
                     <img
                       src={
@@ -564,42 +444,25 @@ onSubmit: async (values) => {
                           : URL.createObjectURL(formik.values.image_article)
                       }
                       alt="Aperçu"
-                      style={{
-                        width: "100%",
-                        maxHeight: "150px",
-                        objectFit: "contain",
-                        borderRadius: "4px",
-                      }}
+                      className="mt-2 w-full max-h-40 object-contain rounded"
                     />
                   )}
-                </Grid>
+                </div>
                 
                 {/* Bouton de soumission */}
-                <Grid item xs={12} sx={{ mt: 2 }}>
-                  <Box display="flex" justifyContent="flex-end">
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      color="primary"
-                      size="medium"
-                    >
-                      {id ? 'Mettre à jour' : 'Créer'}
-                    </Button>
-                  </Box>
-                </Grid>
-              </Grid>
+                <div className="col-span-full flex justify-end mt-4">
+                  <button
+                    type="submit"
+                    className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    {id ? 'Mettre à jour' : 'Créer'}
+                  </button>
+                </div>
+              </div>
             </form>
-          </Paper>
-        </Box>
-      </Box>
+          </div>
+        </main>
+      </div>
     </>
   );
 }
-
-
-
-
-
-
-
-  

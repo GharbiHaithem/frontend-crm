@@ -14,7 +14,7 @@ const EventInfoModal = ({ open, handleClose, onDeleteEvent, currentEvent }) => {
   const onClose = () => {
     handleClose()
   }
-
+console.log(currentEvent)
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>Event Info</DialogTitle>

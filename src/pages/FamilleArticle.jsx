@@ -127,7 +127,7 @@ console.log(familleArticles)
         {/* Sidenav */}
         <Sidenav />
         {/* Contenu principal */}
-        <Container maxWidth="lg" style={{ padding: "20px", width: "100%" }}>
+        <Container maxWidth="lg" style={{ padding: "10px", width: "100%" }}>
           <div
             style={{
               display: "flex",
@@ -193,8 +193,8 @@ console.log(familleArticles)
                           fontWeight: "bold",
                           textAlign: "center",
                           color: "#1976d2",
-                          fontSize: "1.2rem",
-                          padding: "20px",
+                          fontSize: "0.8rem",
+                          padding: "10px",
                         }}
                       >
                         {header}
@@ -207,10 +207,10 @@ console.log(familleArticles)
                   {Array.isArray(familleArticles) && familleArticles.map((familleArticle) => (
                   
                     <TableRow key={familleArticle._id} hover style={{ height: "60px" }}>
-                      <TableCell style={{ fontSize: "1.1rem", padding: "20px" }}>
+                      <TableCell style={{ fontSize: "0.8rem", padding: "10px",textAlign:'center' }}>
                         {familleArticle.codeFamille}
                       </TableCell>
-                      <TableCell style={{ fontSize: "1.1rem", padding: "20px" }}>
+                      <TableCell style={{ fontSize: "0.8rem", padding: "10px",textAlign:'center' }}>
                         {familleArticle.designationFamille}
                       </TableCell>
                       <TableCell style={{ padding: "20px" }}>

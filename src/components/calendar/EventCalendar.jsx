@@ -129,6 +129,8 @@ const EventCalendar = () => {
     setEvents(events.filter((e) => e._id !== currentEvent._id));
     setEventInfoModal(false);
   };
+console.log(events)
+console.log(selectedEventType)
 
   return (
     <Box mt={1} mb={2} component="main" sx={{ flexGrow: 1, py: 1 }}>
@@ -251,27 +253,52 @@ const EventCalendar = () => {
                 setSelectedEventType(null);
               }}
             />
-            <Calendar
-              localizer={localizer}
-              events={events}
-              onSelectEvent={handleSelectEvent}
-              onSelectSlot={handleSelectSlot}
-              selectable
-              startAccessor="start"
-              components={{ event: EventInfo }}
-              endAccessor="end"
-              defaultView="week"
-              eventPropGetter={(event) => {
-                const hasTodo = todos.find((todo) => todo._id === event.todoId);
-                return {
-                  style: {
-                    backgroundColor: hasTodo ? hasTodo.color : "#b64fc8",
-                    borderColor: hasTodo ? hasTodo.color : "#b64fc8",
-                  },
-                };
-              }}
-              style={{ height: 900 }}
-            />
+            {(selectedEventType)}
+         <Calendar
+  localizer={localizer}
+  events={events}
+  onSelectEvent={handleSelectEvent}
+  onSelectSlot={handleSelectSlot}
+  selectable
+  startAccessor="start"
+  components={{ event: EventInfo }}
+  endAccessor="end"
+  defaultView="week"
+  eventPropGetter={(event) => {
+    const hasTodo = todos.find((todo) => todo._id === event.todoId);
+    
+    // Définir les styles en fonction du type d'événement
+    let backgroundColor, borderColor, color;
+    
+    if (event?.type === "tache") {
+      backgroundColor = "#cbb7eb"; // rose vif
+      borderColor = "#cbb7eb"; // rose plus foncé
+      color = "white";
+    } else if (event?.type === "visite") {
+      backgroundColor = "#10b981"; // vert émeraude
+      borderColor = "#059669"; // vert plus foncé
+      color = "white";
+    } else {
+      // Couleur par défaut pour les autres types
+      backgroundColor = "#3b82f6"; // bleu
+      borderColor = "#2563eb"; // bleu plus foncé
+      color = "white";
+    }
+
+    return {
+      style: {
+        backgroundColor,
+        borderColor,
+        color, // Texte en blanc
+        borderRadius: "4px",
+        borderWidth: "1px",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
+        opacity: hasTodo ? 0.8 : 1,
+      },
+    };
+  }}
+  style={{ height: 900 }}
+/>
           </CardContent>
         </Card>
       </Container>

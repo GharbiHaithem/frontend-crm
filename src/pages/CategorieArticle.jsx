@@ -193,8 +193,8 @@ export default function CategorieArticle() {
                           fontWeight: "bold",
                           textAlign: "center",
                           color: "#1976d2",
-                          fontSize: "1.2rem",
-                          padding: "20px",
+                          fontSize: "0.8rem",
+                          padding: "10px",
                         }}
                       >
                         {header}
@@ -205,13 +205,13 @@ export default function CategorieArticle() {
                 <TableBody>
                   {Array.isArray(categorieArticles) && categorieArticles.map((categorieArticle) => (
                     <TableRow key={categorieArticle._id} hover style={{ height: "60px" }}>
-                      <TableCell style={{ fontSize: "1.1rem", padding: "20px" }}>
+                      <TableCell style={{ fontSize: "0.8rem", padding: "10px",textAlign:'center' }}>
                         {categorieArticle.codeCategorie}
                       </TableCell>
-                      <TableCell style={{ fontSize: "1.1rem", padding: "20px" }}>
+                      <TableCell style={{ fontSize: "0.8rem", padding: "10px",textAlign:'center' }}>
                         {categorieArticle.designationCategorie}
                       </TableCell>
-                      <TableCell style={{ padding: "20px" }}>
+                      <TableCell style={{ padding: "10px" }}>
                         <div style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
                           <IconButton
                             color="secondary"

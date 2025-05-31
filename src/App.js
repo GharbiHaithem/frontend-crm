@@ -42,6 +42,8 @@ import Caisse from "./components/Caisse";
 import CaisseForm from "./components/CaisseForm";
 import DetailsPayement from "./components/DetailsPayement";
 import InfoProfil from "./pages/InfoProfil";
+import { useAppStore } from "./appStore";
+
 // Protected route component
 const ProtectedRoute = ({ children }) => {
   const { currentUser, loading } = useAuth();
@@ -77,11 +79,11 @@ const DashboardLayout = ({ children }) => {
 };
 
 function App() {
-
+  const darkMode = useAppStore((state) => state.darkMode); // ✅ lié au re-render
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
     <AuthProvider>
-      <div className="App">
+      <div className={`App  `}>
         <Routes>
           {/* Public routes */}
           <Route exact path="/signup" element={<Signup />} />

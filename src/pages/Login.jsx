@@ -73,15 +73,15 @@ function Login() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
+           Connectez-vous à votre compte
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Or{" "}
+            Ou{" "}
             <Link
               to="/signup"
               className="font-medium text-primary-600 hover:text-primary-500"
             >
-              create a new account
+             créer un nouveau compte
             </Link>
           </p>
         </div>
@@ -115,7 +115,7 @@ function Login() {
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <label htmlFor="email" className="sr-only">
-                Email address
+            Adresse email
               </label>
               <input
                 id="email"
@@ -124,14 +124,14 @@ function Login() {
                 autoComplete="email"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
+                placeholder="Adresse email"
                 value={loginInfo.email}
                 onChange={handleChange}
               />
             </div>
             <div>
               <label htmlFor="password" className="sr-only">
-                Password
+                Mot de passe
               </label>
               <input
                 id="password"
@@ -140,7 +140,7 @@ function Login() {
                 autoComplete="current-password"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
+                placeholder="Mot de passe"
                 value={loginInfo.password}
                 onChange={handleChange}
               />
@@ -159,7 +159,7 @@ function Login() {
                 htmlFor="remember-me"
                 className="ml-2 block text-sm text-gray-900"
               >
-                Remember me
+               Souviens-toi de moi
               </label>
             </div>
 
@@ -168,7 +168,7 @@ function Login() {
                 href="#"
                 className="font-medium text-primary-600 hover:text-primary-500"
               >
-                Forgot your password?
+             Mot de passe oublié?
               </a>
             </div>
           </div>
@@ -219,7 +219,7 @@ function Login() {
                   </svg>
                 </span>
               )}
-              {isLoading ? "Signing in..." : "Sign in"}
+              {isLoading ? "Connexion..." : "Se connecter"}
             </button>
           </div>
         </form>

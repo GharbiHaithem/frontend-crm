@@ -23,6 +23,7 @@ import { IoMdInformationCircle } from "react-icons/io";
 import {Link, useNavigate} from 'react-router-dom'
 import CaisseForm from './CaisseForm';
 import Swal from 'sweetalert2';
+import { IoIosAdd } from "react-icons/io";
 function createData(_id,client, numFacture, totalTTC, status,montantPayé, typeDocument,lignes) {
   return {
       _id,
@@ -385,6 +386,7 @@ export default function Payement() {
   const[codeBanque,setCodeBanque]= useState(null)
    const[dateEcheance,setDateEcheance]= useState("")
   const[selectedCaisse,setSelectedCaisse]= useState("")
+
     const handleChangeModePayement = (event) => {
     setModePayement(event.target.value);
   };
@@ -404,7 +406,14 @@ console.log( modePayement)
     setOpenCaisse(true)
     axios.get(`http://localhost:5000/caisse/${selectedClientId}`).then((result)=>setCaisse(result?.data))
     axios.get(`http://localhost:5000/facture/factureFiltrer?clientid=${selectedClientId}`).then((result)=>{
-      setFactures(result.data)})
+      setFactures(result.data)}).catch((erreur)=>{
+            Swal.fire({
+            title: "Selectionner un client !",
+            text: erreur.response.data.error,
+            icon: "info"
+          });
+          console.log( erreur.response.data.error)
+        })
       console.log(factures)
   }
  },[selectedClientId])
@@ -498,7 +507,14 @@ console.log(JSON.stringify(erreur.caisse))
     setTimeout(() => {
       axios
         .get(`http://localhost:5000/facture/factureFiltrer?clientid=${selectedClientId}`)
-        .then((result) => setFactures(result.data));
+        .then((result) => setFactures(result.data)).catch((erreur)=>{
+          //   Swal.fire({
+          //   title: "Selectionner un client !",
+          //   text: erreur.response.data.erreur,
+          //   icon: "info"
+          // });
+          console.log(erreur)
+        })
     }, 1000);
 
     // Nettoyer les champs
@@ -548,62 +564,83 @@ const handleChangex = (event) => {
 
 <div className="flex flex-wrap gap-6 items-center">
   {/* Sélecteur Client */}
-  <FormControl className="w-1/2 " size="small">
-    <InputLabel htmlFor="client-select">Client</InputLabel>
-    <NativeSelect
+<div className="w-1/2">
+  <label htmlFor="client-select" className="block text-sm font-medium text-gray-700">
+    Client <span className="text-red-500">*</span>
+  </label>
+  
+  <div className="relative">
+    <select
       id="client-select"
+      name="client"
       value={selectedClientId}
       onChange={handleChange}
-      inputProps={{ name: 'client' }}
+      className={`appearance-none mt-1 block w-full rounded-md border px-3 py-2 pr-10 shadow-sm focus:outline-none sm:text-sm
+        ${erreur.client ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'}`}
     >
-      <option value={''}></option>
+      <option value="">-- Choisir un client --</option>
       {clients?.map((c) => (
         <option key={c?._id} value={c?._id}>
           {c?.nom_prenom}
         </option>
       ))}
-    </NativeSelect>
-  </FormControl>
+    </select>
+
+    {/* Icône flèche */}
+    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+      <svg className="h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M7 7l3-3 3 3m0 6l-3 3-3-3" />
+      </svg>
+    </div>
+  </div>
+
+  {/* Message d'erreur */}
+  {erreur.client && (
+    <p className="mt-1 text-sm text-red-600">{erreur.client}</p>
+  )}
+</div>
+
 
   {/* Sélecteur Caisse */}
-<div className='flex gap-1 items-center w-full'>
-      <FormControl className='w-1/2' error={!!erreur.caisse}>
-      <InputLabel htmlFor="caisse-select">Caisse</InputLabel>
-      <NativeSelect
-        id="caisse-select"
-        value={selectedCaisse}
-        onChange={handleChangex}
-        inputProps={{ name: 'caisse' }}
-      >
-        <option value="">-- Choisir une caisse --</option>
-        {caisse?.map((c) => (
-          <option key={c._id} value={c._id}>
-            {c.nom_caisse}
-          </option>
-        ))}
-      </NativeSelect>
-      <FormHelperText>{erreur.caisse}</FormHelperText>
-    </FormControl>
-    <Button data-bs-toggle="modal" data-bs-target="#exampleModal" sx={{
-    backgroundColor: '#1d4ed8',
-    color: 'white',
-    '&:hover': {
-      backgroundColor: '#ddd',
-      color:'black'
-    },
-  }}>Add</Button>
+<div className='flex gap-5 w-full'>
+    <div className="w-1/2 mb-0 ">
+  <label htmlFor="caisse-select" className="block text-sm font-medium text-gray-700">
+    Caisse <span className="text-red-500">*</span>
+  </label>
+  <select
+    id="caisse-select"
+    name="caisse"
+    value={selectedCaisse}
+    onChange={handleChangex}
+    className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none sm:text-sm
+      ${erreur.caisse ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'}`}
+  >
+    <option value="">-- Choisir une caisse --</option>
+    {caisse?.map((c) => (
+      <option key={c._id} value={c._id}>
+        {c.nom_caisse}
+      </option>
+    ))}
+  </select>
+  {erreur.caisse && (
+    <p className="mt-1 text-sm text-red-600">{erreur.caisse}</p>
+  )}
+</div>
+
+    <button style={{transform:'translateY(20px'}} className='p-2 btn h-[40px] w-[40px] flex items-center justify-center btn-secondary rounded-full  text-white ' data-bs-toggle="modal" data-bs-target="#exampleModal"><IoIosAdd className='text-xl'/></button>
 </div>
 
   {/* Date Picker */}
   <DatePicker
+  className='w-1/2'
     label="Date de facturation"
     name="startDate"
     slotProps={{
       textField: {
         size: 'small',
-        fullWidth: true,
+      
         sx: {
-          minWidth: '250px',
+       
           '& .MuiInputBase-root': {
             height: 40,
           },

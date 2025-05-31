@@ -15,7 +15,7 @@
     "autotable": "^1.0.0",
     "axios": "^1.7.9",
     "buffer": "^6.0.3",
-    "date-fns": "^2.29.3",
+    "date-fns": "^2.30.0",
     "fork-ts-checker-webpack-plugin": "^9.0.2",
     "formik": "^2.4.6",
     "framer-motion": "^12.0.6",

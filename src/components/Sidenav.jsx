@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppStore } from "../appStore";
+import { FaMoon, FaSun } from "react-icons/fa6";
 
 // Menu items configuration
 const menuItems = [
@@ -300,10 +301,16 @@ const Icon = ({ name }) => {
 };
 
 export default function Sidenav() {
+    const darkMode = useAppStore((state) => state.darkMode); // ✅ lié au re-render
+  const toggleDarkMode = useAppStore((state) => state.toggleDarkMode);
+   useEffect(() => {
+    document.documentElement.classList.toggle('dark', darkMode);
+  }, [darkMode]);
   const navigate = useNavigate();
   const dopen = useAppStore((state) => state.dopen);
   const UpdateOpen = useAppStore((state) => state.UpdateOpen);
-
+ const {role} = JSON.parse(localStorage.getItem('user'))
+ console.log(role)
   return (
     <aside
       className={`fixed left-0 top-16 h-full bg-white shadow-md transition-all duration-300 z-40 ${
@@ -358,25 +365,47 @@ export default function Sidenav() {
         {/* Menu items */}
         <nav className="flex-1 overflow-y-auto py-4">
           <ul className="space-y-1">
-            {menuItems.map((item, index) => (
-              <li key={index}>
-                <button
-                  onClick={() => navigate(item.path)}
-                  className={`w-full flex items-center px-4 py-3 text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors ${
-                    dopen ? "justify-start" : "justify-center"
-                  }`}
-                >
-                  <span className="text-gray-500">
-                    <Icon name={item.icon} />
-                  </span>
-                  {dopen && (
-                    <span className="ml-3 text-sm font-medium truncate">
-                      {item.label}
-                    </span>
-                  )}
-                </button>
-              </li>
-            ))}
+           {menuItems.map((item, index) => {
+  // Ne pas afficher l'item "Articles" si le rôle est admin
+  if (item.label === "Articles" &&  role === "represantant") {
+    return null;
+  }
+ if ( item.label === "Clients"&&  role === "represantant") {
+    return null;
+  }
+   if (item.label === "Articles"  &&  role === "represantant") {
+    return null;
+  }
+    if ( item.label === "Catégorie d'articles"  &&  role === "represantant") {
+    return null;
+  }
+    if ( item.label === "Famille d'articles" &&  role === "represantant") {
+    return null;
+  }
+  
+  return (
+    <li key={index}>
+      <button
+        onClick={() => navigate(item.path)}
+        className={`w-full flex items-center px-4 py-2 text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors ${
+          dopen ? "justify-start" : "justify-center"
+        }`}
+      >
+        <span className="text-gray-500">
+          <Icon name={item.icon} />
+        </span>
+        {dopen && (
+          <span className="ml-3 text-sm font-medium truncate">
+            {item.label}
+          </span>
+        )}
+      </button>
+    </li>
+  );
+})}
+
+  
+
           </ul>
         </nav>
 

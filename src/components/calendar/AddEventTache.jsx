@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -22,16 +22,15 @@ import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 
-const initialEventFormState = {
-  type: "Tâche",
+const AddEventTache = ({ open, handleClose, onAddEvent }) => {
+  const initialEventFormState = {
+  type: "réunion" ,
   title: "",
   description: "",
   start: null,
   end: null,
   participants: [],
 };
-
-const AddEventTache = ({ open, handleClose, onAddEvent }) => {
   const [eventFormData, setEventFormData] = useState(initialEventFormState);
   const [newParticipant, setNewParticipant] = useState("");
   const [errors, setErrors] = useState({});
@@ -46,6 +45,7 @@ const AddEventTache = ({ open, handleClose, onAddEvent }) => {
   };
 
   const handleTypeChange = (e) => {
+    console.log( e.target.value)
     setEventFormData((prevData) => ({
       ...prevData,
       type: e.target.value,
@@ -131,8 +131,8 @@ const AddEventTache = ({ open, handleClose, onAddEvent }) => {
               <FormControl fullWidth margin="normal" size="small" error={!!errors.type}>
                 <InputLabel>Type</InputLabel>
                 <Select value={eventFormData.type} onChange={handleTypeChange} label="Type">
-                  <MenuItem value="Réunion">Réunion</MenuItem>
-                  <MenuItem value="Tâche">Tâche</MenuItem>
+                  <MenuItem value="réunion">Réunion</MenuItem>
+                  <MenuItem value="tâche">Tâche</MenuItem>
                 </Select>
                 <FormHelperText>{errors.type}</FormHelperText>
               </FormControl>

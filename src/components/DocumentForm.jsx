@@ -241,7 +241,7 @@ const handelnumero = async (date, type_achat) => {
   const handleCancel = () => {
     navigate("/Home");
   };
-
+const[erreurArticle,setErreurArticle]=useState(null)
   const ouvrirFenetreGeneration = () => {
     if (enregistrementReussi) {
       setOpenModal(true);
@@ -345,6 +345,7 @@ const handelnumero = async (date, type_achat) => {
         
       })
       .catch((error) => {
+        setErreurArticle(error.response.data.message)
         console.error("Erreur de chargement des détails de l'article", error);
         const nouvellesLignes = [...formik.values.lignes];
         nouvellesLignes[index] = {
@@ -373,8 +374,16 @@ const handelnumero = async (date, type_achat) => {
       <Box sx={{ display: "flex" }}>
         <Sidenav />
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-          <Typography variant="h4" gutterBottom>
-            {typeDocument}
+          <Typography variant="h4" gutterBottom style={{
+                          fontWeight: "bold",
+                          textAlign: "start",
+                          color: "#1976d2",
+                          fontSize: "1.8rem",
+                          padding: "10px",
+                          background:"white",
+                          width:"100%"
+                        }}>
+          Creer  {typeDocument}
           </Typography>
           <form onSubmit={formik.handleSubmit}>
             <Box sx={{ display: "flex", gap: 2, mb: 4 }}>
@@ -714,6 +723,9 @@ const handelnumero = async (date, type_achat) => {
                             formik.errors.lignes?.[index]?.codeArticle
                           }
                         />
+                           {erreurArticle && (
+          <span className="text-red-500 text-xs font-light">{erreurArticle}</span>
+        )}
                       </td>
                     
                       <td style={{ padding: "8px", border: "1px solid #ddd" }}>
