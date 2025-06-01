@@ -27,6 +27,7 @@ import {
 import { Delete, Edit, Add, Visibility, FilterList } from "@mui/icons-material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import Swal from "sweetalert2";
 
 export default function Article() {
   const [articles, setArticles] = useState([]);
@@ -54,7 +55,7 @@ export default function Article() {
   // Delete article by ID
   const deleteArticle = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/articles/${id}`);
+      await axios.delete(`http://localhost:5000/articles/${id}`).then((result)=> Swal.fire("Supprimé !", "L'Article a été supprimé.", "success"))
       fetchArticles(); // Refresh list after deletion
     } catch (error) {
       console.error("Error deleting article:", error);

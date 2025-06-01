@@ -5,6 +5,7 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { TextField, Button, Container, Typography, Box, Grid, Select, MenuItem, Autocomplete, InputAdornment } from '@mui/material';
 import ReactCountryFlag from "react-country-flag";
+import Swal from 'sweetalert2';
 
 const validationSchema = Yup.object().shape({
   nom_prenom: Yup.string()
@@ -54,10 +55,15 @@ const[erreurCode,setErreurCode]=useState(null)
     onSubmit: async (values) => {
       try {
         if (id) {
-          await axios.put(`http://localhost:5000/clients/${id}`, values);
+          await axios.put(`http://localhost:5000/clients/${id}`, values).then(()=>{Swal.fire( "Le client a Edité .","Le client a été Edité.", "success")
+
+             navigate('/clients')
+          })
         } else {
           await axios.post('http://localhost:5000/clients', values)
-          .then(()=>   navigate('/clients'))
+          .then(()=>  {
+            Swal.fire( "Le client a Creé .","Le client a été Creé.", "success")
+            navigate('/clients')})
           .catch((response)=>setErreurCode(response.response.data.message))
         }
      
@@ -153,7 +159,14 @@ const[erreurCode,setErreurCode]=useState(null)
                     '& .MuiFormHelperText-root': {
                       marginTop: 0.5,
                       lineHeight: 1.2
-                    }
+                    },
+                     border: "none",
+      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+      borderRadius: "8px",
+      backgroundColor: "#fff",
+      "& fieldset": {
+        border: "none", // Supprimer le border du Select
+      },
                   }}
                 />
                 {erreurCode && key === 'code' && (
@@ -178,7 +191,14 @@ const[erreurCode,setErreurCode]=useState(null)
               sx={{ 
                 '& .MuiInputBase-root': {
                   height: '40px',
-                }
+                },
+                 border: "none",
+      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+      borderRadius: "8px",
+      backgroundColor: "#fff",
+      "& fieldset": {
+        border: "none", // Supprimer le border du Select
+      },
               }}
               InputProps={{
                 startAdornment: (
@@ -212,7 +232,14 @@ const[erreurCode,setErreurCode]=useState(null)
                             '& .MuiInputBase-root': {
                               height: '40px',
                               padding: 0
-                            }
+                            },
+                             border: "none",
+      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+      borderRadius: "8px",
+      backgroundColor: "#fff",
+      "& fieldset": {
+        border: "none", // Supprimer le border du Select
+      },
                           }}
                         />
                       )}
@@ -244,7 +271,14 @@ const[erreurCode,setErreurCode]=useState(null)
                 mt: 2,
                 '& .MuiInputBase-root': {
                   height: '40px',
-                }
+                },
+                 border: "none",
+      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+      borderRadius: "8px",
+      backgroundColor: "#fff",
+      "& fieldset": {
+        border: "none", // Supprimer le border du Select
+      },
               }}
             >
               <MenuItem value="" disabled>

@@ -96,8 +96,8 @@ function Row(props) {
   </TableCell>
   <TableCell align="right">{row.typeDocument}</TableCell>
   <TableCell align="right">
- <button  onClick={()=>navigate(`/payement/${row?._id}`)} type="button" className="bg-transparent uppercase text-blue-700 flex items-center gap-1" >
-<IoMdInformationCircle className='text-2xl' />  Détails Payements
+ <button disabled={row?.status==="unpaid"}  onClick={()=>navigate(`/payement/${row?._id}`)} type="button" className="bg-blue-100 px-2 rounded-md text-xs font-semibold uppercase text-blue-700 flex items-center gap-1" >
+<IoMdInformationCircle className='text-2xl' />  Détails Paiement
 </button>
   </TableCell>
 </TableRow>
@@ -554,13 +554,7 @@ const handleChangex = (event) => {
   console.log(selectedCaisse)
   return (
     <>
-      <nav aria-label="breadcrumb">
-    <ol class="breadcrumb   bg-white w-full p-3">
-      <li class="breadcrumb-item"><Link to={"/"}>Home</Link></li>
-   
-      <li class="breadcrumb-item active" aria-current="page">Payement Client</li>
-    </ol>
-  </nav>
+
 
 <div className="flex flex-wrap gap-6 items-center">
   {/* Sélecteur Client */}
@@ -667,7 +661,7 @@ const handleChangex = (event) => {
            <TableCell align="right"> montantPayé</TableCell>
             <TableCell align="right">Statut Paiement</TableCell>
             <TableCell align="right">Type de Facture</TableCell>
-            <TableCell align="right">Details Payement</TableCell>
+            <TableCell align="right">Details de Paiement</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -687,7 +681,7 @@ const handleChangex = (event) => {
   </div>}
 </div>
   <FormControl>
-      <FormLabel id="demo-row-radio-buttons-group-label">Mode de Payement</FormLabel>
+      <FormLabel id="demo-row-radio-buttons-group-label">Mode de Paiement</FormLabel>
       <RadioGroup
         row
         aria-labelledby="demo-row-radio-buttons-group-label"

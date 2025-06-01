@@ -25,7 +25,7 @@ const PopularProduct = ({isLoading,setIsLoading}) => {
   return (
      <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-semibold text-neutral-800 mb-6">
-            Popular Products
+          Produits populaires
           </h3>
 
           <div className="space-y-4">

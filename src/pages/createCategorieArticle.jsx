@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { TextField, Button, Grid, Box, Typography, Stack } from "@mui/material";
 import Sidenav from "../components/Sidenav";
 import Navbar from "../components/Navbar";
+import Swal from "sweetalert2";
 
 // Schéma de validation Yup
 const validationSchema = Yup.object().shape({
@@ -20,6 +21,7 @@ const validationSchema = Yup.object().shape({
 });
 
 export default function CreateCategorieArticle() {
+
   const formik = useFormik({
     initialValues: {
       designationCategorie: "",
@@ -28,8 +30,8 @@ export default function CreateCategorieArticle() {
     validationSchema,
     onSubmit: async (values, { resetForm }) => {
       try {
-        await axios.post("http://localhost:5000/categorie", values);
-        alert("Catégorie d'article créée avec succès !");
+        await axios.post("http://localhost:5000/categorie", values).then(()=>Swal.fire("créé !", "Catégorie d'article créée avec succès !"))
+      
         resetForm();
       } catch (error) {
         console.error(
@@ -93,7 +95,14 @@ export default function CreateCategorieArticle() {
       width: '80%', // Augmentez ce pourcentage selon vos besoins
       '& .MuiOutlinedInput-root': {
         height: '40px' // Ajuste la hauteur si nécessaire
-      }
+      },
+        border: "none",
+      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+      borderRadius: "8px",
+      backgroundColor: "#fff",
+      "& fieldset": {
+        border: "none", // Supprimer le border du Select
+      },
     }}
     value={formik.values.designationCategorie}
     onChange={formik.handleChange}
@@ -109,7 +118,14 @@ export default function CreateCategorieArticle() {
       width: '80%', // Augmentez ce pourcentage selon vos besoins
       '& .MuiOutlinedInput-root': {
         height: '40px' // Ajuste la hauteur si nécessaire
-      }
+      },
+        border: "none",
+      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+      borderRadius: "8px",
+      backgroundColor: "#fff",
+      "& fieldset": {
+        border: "none", // Supprimer le border du Select
+      },
     }}
     value={formik.values.codeCategorie}
     onChange={formik.handleChange}

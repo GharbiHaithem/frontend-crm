@@ -27,7 +27,7 @@ const menuItems = [
   { path: "/payement", label: "Payement", icon: "payement" },
   { path: "/EventCalendar", label: "Calendrier", icon: "calendar" },
   { path: "/settings", label: "Paramètres", icon: "cog" },
-  { path: "/about", label: "À propos", icon: "information-circle" },
+ 
 ];
 
 // Icon component to render the appropriate SVG based on icon name

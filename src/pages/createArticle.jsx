@@ -6,6 +6,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Sidenav from "../components/Sidenav";
 import Navbar from "../components/Navbar";
 import { Typography } from "@mui/material";
+import Swal from "sweetalert2";
 
 const validationSchema = Yup.object().shape({
   libelle: Yup.string().required("Ce champ est requis"),
@@ -104,11 +105,11 @@ export default function CreateArticle() {
         if (!id) {
           await axios.post("http://localhost:5000/articles", formData, {
             headers: { "Content-Type": "multipart/form-data" },
-          });
-          alert("Article créé avec succès !");
+          }).then(()=>Swal.fire("créé !", "Article créé avec succès"))
+      
         } else {
-          await axios.put(`http://localhost:5000/articles/${id}`, values);
-          alert("Article édité avec succès !");
+          await axios.put(`http://localhost:5000/articles/${id}`, values).then((result)=> Swal.fire("Update !", "Article édité avec succès"))
+        
         }
         navigate("/Articles");
       } catch (error) {
@@ -121,6 +122,12 @@ export default function CreateArticle() {
   const handleFileChange = (event) => {
     formik.setFieldValue("image_article", event.currentTarget.files[0]);
   };
+function bufferToBase64(buffer) {
+  if (!buffer || !Array.isArray(buffer)) return '';
+  const binary = buffer.reduce((data, byte) => data + String.fromCharCode(byte), '');
+  return window.btoa(binary);
+}
+
 
   return (
     <>
@@ -436,7 +443,7 @@ export default function CreateArticle() {
                       />
                     </label>
                   </div>
-                  {formik.values.image_article && !id && (
+                  {formik.values.image_article && !id ? (
                     <img
                       src={
                         typeof formik.values.image_article === "string"
@@ -446,7 +453,13 @@ export default function CreateArticle() {
                       alt="Aperçu"
                       className="mt-2 w-full max-h-40 object-contain rounded"
                     />
-                  )}
+                  ):
+                  <img
+                  className="w-full onject-cover h-[150px]"
+  src={`data:image/jpeg;base64,${bufferToBase64(formik.values.image_article.data)}`}
+  alt="article"
+/>
+}
                 </div>
                 
                 {/* Bouton de soumission */}

@@ -6,6 +6,7 @@ import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import Swal from "sweetalert2";
 
 export default function CreateFamilleArticle() {
   const navigate = useNavigate();
@@ -30,8 +31,8 @@ export default function CreateFamilleArticle() {
     onSubmit: async (values) => {
       try {
   
-        await axios.post("http://localhost:5000/famille", values);
-        alert("Famille Article créée avec succès !");
+        await axios.post("http://localhost:5000/famille", values).then(()=>Swal.fire("créé !", "Famille Article créée avec succès !"))
+   
         formik.resetForm();
         navigate("/FamilleArticle");
       } catch (error) {
@@ -65,7 +66,7 @@ export default function CreateFamilleArticle() {
               <Grid item xs={10}>
                 <TextField
                   name="designationFamille"
-                  label="Designation de famille"
+                  label="Designation de famille *"
                   fullWidth
                   margin="normal"
                   value={formik.values.designationFamille}
@@ -74,6 +75,15 @@ export default function CreateFamilleArticle() {
                   error={formik.touched.designationFamille && Boolean(formik.errors.designationFamille)}
                   helperText={formik.touched.designationFamille && formik.errors.designationFamille}
                   size="small"
+                   sx={{
+      border: "none",
+      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+      borderRadius: "8px",
+      backgroundColor: "#fff",
+      "& fieldset": {
+        border: "none", // Supprimer le border du Select
+      },
+    }}
                 />
               </Grid>
             </Grid>
@@ -82,7 +92,7 @@ export default function CreateFamilleArticle() {
               <Grid item xs={10}>
                 <TextField
                   name="codeFamille"
-                  label="Code de famille"
+                  label="Code de famille *"
                   fullWidth
                   margin="normal"
                   value={formik.values.codeFamille}
@@ -91,6 +101,15 @@ export default function CreateFamilleArticle() {
                   error={formik.touched.codeFamille && Boolean(formik.errors.codeFamille)}
                   helperText={formik.touched.codeFamille && formik.errors.codeFamille}
                   size="small"
+                   sx={{
+      border: "none",
+      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+      borderRadius: "8px",
+      backgroundColor: "#fff",
+      "& fieldset": {
+        border: "none", // Supprimer le border du Select
+      },
+    }}
                 />
               </Grid>
             </Grid>

@@ -30,13 +30,7 @@ const DetailsPayement = () => {
   const navigate = useNavigate()
   return (
     <>
-    <nav aria-label="breadcrumb">
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item"><Link to={"/"}>Home</Link></li>
-    <li class="breadcrumb-item"><Link to={"/payement"}>Payement</Link></li>
-    <li class="breadcrumb-item active" aria-current="page">Payement Détails</li>
-  </ol>
-</nav>
+  
       {currentItems?.length > 0 && (
         <div className="w-[90%] mx-auto max-w-full text-xs font-medium italic">
             <Button 

@@ -26,6 +26,7 @@ import {
 import { Delete, Edit, Add, Visibility, FilterList } from "@mui/icons-material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import Swal from "sweetalert2";
 
 export default function FamilleArticle() {
   const [familleArticles, setFamilleArticles] = useState([]);
@@ -52,7 +53,7 @@ console.log(familleArticles)
   // Delete famille article by ID
   const deleteFamilleArticle = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/famille/${id}`);
+      await axios.delete(`http://localhost:5000/famille/${id}`).then(()=>   Swal.fire("Supprimé !", "La famille d'article a été supprimé avec succees.", "error"))
       fetchFamilleArticle(); // Refresh list after deletion
     } catch (error) {
       console.error("Error deleting famille article:", error);

@@ -199,17 +199,17 @@ export default function Home() {
         <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-semibold text-neutral-800">
-              Revenue Overview
+            Aperçu des revenus
             </h3>
             <div className="flex space-x-2">
               <button className="px-3 py-1 text-xs bg-primary-50 text-primary-600 rounded-md font-medium">
-                Monthly
+             Mensuel
               </button>
               <button className="px-3 py-1 text-xs text-neutral-500 hover:bg-neutral-100 rounded-md font-medium">
-                Quarterly
+                Trimestriel
               </button>
               <button className="px-3 py-1 text-xs text-neutral-500 hover:bg-neutral-100 rounded-md font-medium">
-                Yearly
+                Annuel
               </button>
             </div>
           </div>

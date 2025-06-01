@@ -4,6 +4,7 @@ import { ToastContainer, toast } from "react-toastify";
 import { authService } from "../services/api";
 import { useAppStore } from "../appStore";
 import {useAuth} from '../contexts/AuthContext'
+import axios from "axios";
 function Login() {
   const [loginInfo, setLoginInfo] = useState({
     email: "",
@@ -68,6 +69,17 @@ function Login() {
     console.log(connected)
 
   },[])
+    const [message, setMessage] = useState("");
+    const handleChangePassword = async (e) => {
+      e.preventDefault();
+      try {
+        const res = await axios.post("http://localhost:5000/api/forgotPassword", { email:loginInfo.email });
+        setMessage("Un lien de réinitialisation a été envoyé à votre adresse email.");
+      } catch (err) {
+        setMessage("Erreur : " + err.response.data.message);
+      }
+    };
+  console.log(message)
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -165,7 +177,8 @@ function Login() {
 
             <div className="text-sm">
               <a
-                href="#"
+
+               onClick={handleChangePassword}
                 className="font-medium text-primary-600 hover:text-primary-500"
               >
              Mot de passe oublié?

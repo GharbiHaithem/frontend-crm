@@ -14,6 +14,7 @@ import {
   InputLabel,
   FormControl,
   Typography,
+  FormHelperText,
 } from "@mui/material";
 import {
   Dialog,
@@ -41,9 +42,22 @@ const validationSchema = Yup.object().shape({
 });
 
 const DocumentForm = ({ typeDocument }) => {
+    const[client,setClient] = useState([])
+     const[selectedClient,setSelectedClient] = useState('')
+    useEffect(()=>{
+      axios.get(`http://localhost:5000/clients/all`).then((result)=>setClient(result.data)) 
+    },[])
+    console.log(client)
   console.log(typeDocument)
   const navigate = useNavigate();
+const today = new Date();
+  const fiveDaysLater = new Date();
+  fiveDaysLater.setDate(today.getDate() + 5);
 
+  // Formater les dates au format yyyy-mm-dd
+  const formatDate = (date) => {
+    return date.toISOString().split("T")[0];
+  };
   const [openModal, setOpenModal] = useState(false);
   const [enregistrementReussi, setEnregistrementReussi] = useState(false);
   const [id, setId] = useState();
@@ -119,17 +133,22 @@ const DocumentForm = ({ typeDocument }) => {
       }
     },
   });
-
-  // useEffect(() => {
-  //   axios
-  //     .get("http://localhost:5000/famille")
-  //     .then((response) => {
-  //       setFamilles(response.data);
-  //     })
-  //     .catch((error) =>
-  //       console.error("Erreur de chargement des familles", error)
-  //     );
-  // }, []);
+ useEffect(()=>{
+  if(selectedClient){
+axios.get(`http://localhost:5000/clients/${selectedClient}`).then((response)=>{
+  console.log(response.data)
+  formik.setFieldValue("clientDetails", {
+          code: response.data.code,
+          adresse: response.data.adresse,
+          matricule: response.data.matricule_fiscale,
+          raisonSociale: response.data.raison_social,
+          telephone: response.data.telephone,
+        })
+})
+  }
+  
+ },[selectedClient])
+ 
 
   useEffect(() => {
     handelnumero(formik.values.date, typeDocument);
@@ -289,7 +308,7 @@ const[erreurArticle,setErreurArticle]=useState(null)
     success: '',
     err: ''
   });
-
+console.log(selectedClient)
   const fetchClientByCode = (code) => {
     axios
       .get(`http://localhost:5000/clients/code/${code}`)
@@ -367,6 +386,12 @@ const[erreurArticle,setErreurArticle]=useState(null)
      formik.setFieldValue('numero', num)
   }).catch((erreur) => setNumEntete({ success: "", err: erreur.response.data.message }))
   }
+  const[selectCodeArticle,setSelectCodeArticle] =useState('')
+    const[article,setArticle] =useState('')
+  useEffect(()=>{
+    axios.get(`http://localhost:5000/articles/`).then((result)=>setArticle(result.data))
+  },[])
+  console.log(article)
   return (
     <>
       <Navbar />
@@ -383,7 +408,7 @@ const[erreurArticle,setErreurArticle]=useState(null)
                           background:"white",
                           width:"100%"
                         }}>
-          Creer  {typeDocument}
+          Nouveau  {typeDocument}
           </Typography>
           <form onSubmit={formik.handleSubmit}>
             <Box sx={{ display: "flex", gap: 2, mb: 4 }}>
@@ -392,12 +417,40 @@ const[erreurArticle,setErreurArticle]=useState(null)
                 <Typography variant="h6" gutterBottom>
                   Client
                 </Typography>
+<FormControl fullWidth>
+  <InputLabel id="client-select-label">Client</InputLabel>
+  <Select
+    labelId="client-select-label"
+    id="client-select"
+    value={selectedClient || ""} // contrôler la valeur sélectionnée
+    onChange={(e) => setSelectedClient(e.target.value)}
+    label="Client"
+    size="small"
+    sx={{
+      border: "none",
+      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+      borderRadius: "8px",
+      backgroundColor: "#fff",
+      "& fieldset": {
+        border: "none",
+      },
+    }}
+  >
+    {client?.map((c) => (
+      <MenuItem key={c?._id} value={c?._id}>
+        {c?.nom_prenom}
+      </MenuItem>
+    ))}
+  </Select>
+</FormControl>
+
                 <TextField
                   label="Code"
                   name="clientDetails.code"
                   fullWidth
                   margin="normal"
                   size="small"
+                  disabled={true}
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       '& fieldset': {
@@ -417,7 +470,14 @@ const[erreurArticle,setErreurArticle]=useState(null)
                           : message.err ? '#F87171' : '' // Rouge-400
 
                       }
-                    }
+                    },
+                      border: "none",
+      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+      borderRadius: "8px",
+      backgroundColor: "#fff",
+      "& fieldset": {
+        border: "none", // Supprimer le border du Select
+      },
                   }}
                   InputProps={{
                     style: {
@@ -425,6 +485,7 @@ const[erreurArticle,setErreurArticle]=useState(null)
                       borderRadius: '8px'
                     }
                   }}
+  
                   value={formik.values.clientDetails.code}
                   onChange={(e) => {
                     formik.handleChange(e);
@@ -467,6 +528,15 @@ const[erreurArticle,setErreurArticle]=useState(null)
                     formik.errors.clientDetails?.adresse
                   }
                   disabled={true}
+                    sx={{
+      border: "none",
+      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+      borderRadius: "8px",
+      backgroundColor: "#fff",
+      "& fieldset": {
+        border: "none", // Supprimer le border du Select
+      },
+    }}
                 />
                 <TextField
                   label="Matricule"
@@ -485,6 +555,15 @@ const[erreurArticle,setErreurArticle]=useState(null)
                     formik.errors.clientDetails?.matricule
                   }
                   disabled={true}
+                    sx={{
+      border: "none",
+      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+      borderRadius: "8px",
+      backgroundColor: "#fff",
+      "& fieldset": {
+        border: "none", // Supprimer le border du Select
+      },
+    }}
                 />
                 <TextField
                   label="Raison Sociale"
@@ -503,6 +582,15 @@ const[erreurArticle,setErreurArticle]=useState(null)
                     formik.errors.clientDetails?.raisonSociale
                   }
                   disabled={true}
+                    sx={{
+      border: "none",
+      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+      borderRadius: "8px",
+      backgroundColor: "#fff",
+      "& fieldset": {
+        border: "none", // Supprimer le border du Select
+      },
+    }}
                 />
                 <TextField
                   label="Téléphone"
@@ -521,6 +609,15 @@ const[erreurArticle,setErreurArticle]=useState(null)
                     formik.errors.clientDetails?.telephone
                   }
                   disabled={true}
+                    sx={{
+      border: "none",
+      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+      borderRadius: "8px",
+      backgroundColor: "#fff",
+      "& fieldset": {
+        border: "none", // Supprimer le border du Select
+      },
+    }}
                 />
               </Box>
 
@@ -545,8 +642,24 @@ const[erreurArticle,setErreurArticle]=useState(null)
                   error={formik.touched.date && Boolean(formik.errors.date)}
                   helperText={formik.touched.date && formik.errors.date}
                   size="small"
+                 InputProps={{
+    inputProps: {
+      min: formatDate(today),
+      max: formatDate(fiveDaysLater),
+    },
+  }}
+    sx={{
+      border: "none",
+      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+      borderRadius: "8px",
+      backgroundColor: "#fff",
+      "& fieldset": {
+        border: "none", // Supprimer le border du Select
+      },
+    }}
                 />
                 <TextField
+    
                   label="Numéro"
                   name="numero"
                   fullWidth
@@ -572,7 +685,14 @@ const[erreurArticle,setErreurArticle]=useState(null)
                           : numEntete.err ? '#F87171' : ''// Rouge-400
 
                       }
-                    }
+                    },
+                       border: "none",
+      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+      borderRadius: "8px",
+      backgroundColor: "#fff",
+      "& fieldset": {
+        border: "none", // Supprimer le border du Select
+      },
                   }}
                   error={
                     formik.touched.numero &&
@@ -606,6 +726,15 @@ const[erreurArticle,setErreurArticle]=useState(null)
                     formik.touched?.refBCC &&
                     formik.errors?.refBCC
                   }
+                    sx={{
+      border: "none",
+      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+      borderRadius: "8px",
+      backgroundColor: "#fff",
+      "& fieldset": {
+        border: "none", // Supprimer le border du Select
+      },
+    }}
                 />
                 <TextField
                   label="Point de Vente"
@@ -624,25 +753,49 @@ const[erreurArticle,setErreurArticle]=useState(null)
                     formik.touched.pointVente &&
                     formik.errors.pointVente
                   }
+                    sx={{
+      border: "none",
+      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+      borderRadius: "8px",
+      backgroundColor: "#fff",
+      "& fieldset": {
+        border: "none", // Supprimer le border du Select
+      },
+    }}
                 />
+              <FormControl fullWidth margin="normal" size="small">
+  <InputLabel id="type-paiement-label">Type de Paiement</InputLabel>
+  <Select
+    labelId="type-paiement-label"
+    id="typePaiement"
+    name="typePaiement"
+    value={formik.values.typePaiement}
+    onChange={formik.handleChange}
+    error={
+      formik.touched?.typePaiement &&
+      Boolean(formik.errors?.typePaiement)
+    }
+    sx={{
+      border: "none",
+      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+      borderRadius: "8px",
+      backgroundColor: "#fff",
+      "& fieldset": {
+        border: "none",
+      },
+    }}
+  >
+    <MenuItem value="chèque">Chèque</MenuItem>
+    <MenuItem value="espèce">Espèce</MenuItem>
+    <MenuItem value="effet">Effet</MenuItem>
+  </Select>
+  {formik.touched?.typePaiement && formik.errors?.typePaiement && (
+    <FormHelperText error>{formik.errors.typePaiement}</FormHelperText>
+  )}
+</FormControl>
+
                 <TextField
-                  label="Type de Paiement"
-                  name="typePaiement"
-                  fullWidth
-                  margin="normal"
-                  value={formik.values.typePaiement}
-                  onChange={formik.handleChange}
-                  size="small"
-                  error={
-                    formik.touched?.typePaiement &&
-                    Boolean(formik.errors?.typePaiement)
-                  }
-                  helperText={
-                    formik.touched?.typePaiement &&
-                    formik.errors?.typePaiement
-                  }
-                />
-                <TextField
+                
                   label="Commentaire"
                   name="commentaire"
                   fullWidth
@@ -707,26 +860,44 @@ const[erreurArticle,setErreurArticle]=useState(null)
                       <td style={{ padding: "8px", border: "1px solid #ddd" }}>
                         {index + 1}
                       </td>
-                      <td style={{ padding: "8px", border: "1px solid #ddd" }}>
-                        <TextField
-                          value={ligne.codeArticle}
-                          onChange={(e) =>
-                            mettreAJourLigne(index, "codeArticle", e.target.value)
-                          }
-                          size="small"
-                          error={
-                            formik.touched.lignes?.[index]?.codeArticle &&
-                            Boolean(formik.errors.lignes?.[index]?.codeArticle)
-                          }
-                          helperText={
-                            formik.touched.lignes?.[index]?.codeArticle &&
-                            formik.errors.lignes?.[index]?.codeArticle
-                          }
-                        />
-                           {erreurArticle && (
-          <span className="text-red-500 text-xs font-light">{erreurArticle}</span>
-        )}
-                      </td>
+                    <td style={{ padding: "8px", border: "1px solid #ddd" }}>
+  <FormControl fullWidth sx={{ minWidth: 200 }}>
+    <InputLabel id="client-select-label">code article</InputLabel>
+    <Select
+      labelId="client-select-label"
+      id="client-select"
+      value={ligne.codeArticle || ""}
+      onChange={(e) =>
+        mettreAJourLigne(index, "codeArticle", e.target.value)
+      }
+      label="article"
+      size="small"
+      sx={{
+        width: "100%", // prendra la largeur du FormControl
+        border: "none",
+        boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+        borderRadius: "8px",
+        backgroundColor: "#fff",
+        "& fieldset": {
+          border: "none",
+        },
+      }}
+    >
+      {article && article.map((c) => (
+        <MenuItem key={c?._id} value={c?.code}>
+          {c?.code}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+
+  {erreurArticle && (
+    <span className="text-red-500 text-xs font-light">
+      {erreurArticle}
+    </span>
+  )}
+</td>
+
                     
                       <td style={{ padding: "8px", border: "1px solid #ddd" }}>
                         <TextField

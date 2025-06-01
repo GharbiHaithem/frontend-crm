@@ -43,6 +43,7 @@ import CaisseForm from "./components/CaisseForm";
 import DetailsPayement from "./components/DetailsPayement";
 import InfoProfil from "./pages/InfoProfil";
 import { useAppStore } from "./appStore";
+import ResetPassword from "./pages/ResetPassword";
 
 // Protected route component
 const ProtectedRoute = ({ children }) => {
@@ -494,6 +495,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+            <Route path="/resetPassword/:token" element={<ResetPassword />} />
         </Routes>
       </div>
     </AuthProvider>
