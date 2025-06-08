@@ -1,118 +1,92 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  Box,
-  Typography,
-  Paper,
-  Grid,
-  Divider,
-  Chip,
-  Stack,
-  List,
-  ListItem
-} from '@mui/material';
-import { 
-  Person as PersonIcon,
-  Phone as PhoneIcon,
-  Home as HomeIcon,
-  Work as WorkIcon,
-  Receipt as ReceiptIcon,
-  AttachMoney as AttachMoneyIcon
-} from '@mui/icons-material';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 
 const DetailsClient = () => {
-      const {id} = useParams()
-      const [client,setClient]= useState({})
-      useEffect(()=>{
-            if(id){
-                   axios.get(`http://localhost:5000/clients/${id}`).then((response)=>setClient(response.data))
-            }
-      },[id])
-  if (!client) return <Typography>Aucun client sélectionné</Typography>;
-console.log(client)
+  const { id } = useParams();
+  const [client, setClient] = useState(null);
+
+  useEffect(() => {
+    if (id) {
+      axios.get(`http://localhost:5000/clients/${id}`).then((response) => {
+        setClient(response.data);
+      });
+    }
+  }, [id]);
+
+  if (!client) return <p className="text-center text-gray-500">Aucun client sélectionné</p>;
+
   return (
-  <Paper elevation={3} sx={{ p: 3, borderRadius: 2, maxWidth: 600 }}>
+    <div className="bg-white rounded-2xl shadow p-6 max-w-3xl mx-auto">
       {/* En-tête */}
-      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
-        <PersonIcon color="primary" fontSize="large" />
-        <Box>
-          <Typography variant="h5">{client.nom_prenom}</Typography>
-          <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-            <Chip 
-              label={`Code: ${client.code}`} 
-              color="secondary" 
-              size="medium"
-              
-            />
-            <Chip 
-              label={`Tél: ${client.telephone}`} 
-              icon={<PhoneIcon fontSize="small" />}
-              size="medium"
-            />
-          </Stack>
-        </Box>
-      </Stack>
+      <div className="flex items-center space-x-4 mb-6">
+        <div className="bg-blue-100 text-blue-600 rounded-full p-3">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M5.121 17.804A13.937 13.937 0 0112 15c2.489 0 4.797.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </div>
+        <div>
+          <h2 className="text-2xl font-bold">{client.nom_prenom}</h2>
+          <div className="flex gap-2 mt-1">
+            <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-sm">
+              Code : {client.code}
+            </span>
+            <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-sm">
+              Tél : {client.telephone}
+            </span>
+          </div>
+        </div>
+      </div>
 
-      <Divider sx={{ my: 2 }} />
-
-      {/* Liste des informations */}
-      <List disablePadding>
-        {/* Section Professionnelle */}
-        <ListItem sx={{ display: 'block', mb: 2 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
-            <WorkIcon color="action" sx={{ mr: 1 }} />
-            Informations Professionnelles
-          </Typography>
-          <Box sx={{ pl: 4, mt: 1 }}>
-            <Typography>Raison Sociale: {client.raison_social}</Typography>
-            <Typography>Matricule Fiscale: {client.matricule_fiscale || '-'}</Typography>
-            <Typography>Reg. Commerce: {client.register_commerce || '-'}</Typography>
-          </Box>
-        </ListItem>
-
-        <Divider component="li" sx={{ my: 1 }} />
+      {/* Bloc Informations */}
+      <div className="space-y-6">
+        {/* Infos pro */}
+        <div>
+          <h3 className="text-lg font-semibold flex items-center text-gray-700">
+            <span className="mr-2">🧑‍💼</span> Informations Professionnelles
+          </h3>
+          <ul className="ml-6 mt-2 space-y-1 text-gray-600">
+            <li>Raison Sociale : {client.raison_social}</li>
+            <li>Matricule Fiscale : {client.matricule_fiscale || '-'}</li>
+            <li>Reg. Commerce : {client.register_commerce || '-'}</li>
+          </ul>
+        </div>
 
         {/* Adresse */}
-        <ListItem sx={{ display: 'block', mb: 2 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
-            <HomeIcon color="action" sx={{ mr: 1 }} />
-            Adresse
-          </Typography>
-          <Typography sx={{ pl: 4, mt: 1 }}>{client.adresse || 'Non renseignée'}</Typography>
-        </ListItem>
+        <div>
+          <h3 className="text-lg font-semibold flex items-center text-gray-700">
+            <span className="mr-2">🏠</span> Adresse
+          </h3>
+          <p className="ml-6 mt-2 text-gray-600">{client.adresse || 'Non renseignée'}</p>
+        </div>
 
-        <Divider component="li" sx={{ my: 1 }} />
+        {/* Infos financières */}
+        <div>
+          <h3 className="text-lg font-semibold flex items-center text-gray-700">
+            <span className="mr-2">💰</span> Informations Financières
+          </h3>
+          <ul className="ml-6 mt-2 space-y-1 text-gray-600">
+            <li>Solde Initial : {client.solde_initial}</li>
+            <li>Montant Rapproché : {client.montant_raprochement}</li>
+            <li>Solde Initial BL : {client.solde_initiale_bl}</li>
+            <li>Taux Retenu : {client.taux_retenu}%</li>
+          </ul>
+        </div>
 
-        {/* Informations Financières */}
-        <ListItem sx={{ display: 'block', mb: 2 }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
-            <AttachMoneyIcon color="action" sx={{ mr: 1 }} />
-            Informations Financières
-          </Typography>
-          <Box sx={{ pl: 4, mt: 1 }}>
-            <Typography>Solde Initial: {client.solde_initial}</Typography>
-            <Typography>Montant Rapproché: {client.montant_raprochement}</Typography>
-            <Typography>Solde Initial BL: {client.solde_initiale_bl}</Typography>
-            <Typography>Taux Retenu: {client.taux_retenu}%</Typography>
-          </Box>
-        </ListItem>
-
-        <Divider component="li" sx={{ my: 1 }} />
-
-        {/* Autres Informations */}
-        <ListItem sx={{ display: 'block' }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
-            <ReceiptIcon color="action" sx={{ mr: 1 }} />
-            Autres Informations
-          </Typography>
-          <Box sx={{ pl: 4, mt: 1 }}>
-            <Typography>Code Rapprochement: {client.code_rapprochement || '-'}</Typography>
-            <Typography>Rape BL: {client.rapeBl || '-'}</Typography>
-          </Box>
-        </ListItem>
-      </List>
-    </Paper>
+        {/* Autres infos */}
+        <div>
+          <h3 className="text-lg font-semibold flex items-center text-gray-700">
+            <span className="mr-2">📄</span> Autres Informations
+          </h3>
+          <ul className="ml-6 mt-2 space-y-1 text-gray-600">
+            <li>Code Rapprochement : {client.code_rapprochement || '-'}</li>
+            <li>Rape BL : {client.rapeBl || '-'}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
   );
 };
 

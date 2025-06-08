@@ -443,7 +443,7 @@ function bufferToBase64(buffer) {
                       />
                     </label>
                   </div>
-                  {formik.values.image_article && !id ? (
+                  {formik.values.image_article && !id && (
                     <img
                       src={
                         typeof formik.values.image_article === "string"
@@ -453,12 +453,7 @@ function bufferToBase64(buffer) {
                       alt="Aperçu"
                       className="mt-2 w-full max-h-40 object-contain rounded"
                     />
-                  ):
-                  <img
-                  className="w-full onject-cover h-[150px]"
-  src={`data:image/jpeg;base64,${bufferToBase64(formik.values.image_article.data)}`}
-  alt="article"
-/>
+                  )
 }
                 </div>
                 

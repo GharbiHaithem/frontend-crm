@@ -59,6 +59,8 @@ export default function Article() {
       fetchArticles(); // Refresh list after deletion
     } catch (error) {
       console.error("Error deleting article:", error);
+      console.log(error.response.data.message)
+        Swal.fire("Erreur de Suppression !", error.response.data.message, "error")
     }
   };
 

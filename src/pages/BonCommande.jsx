@@ -51,7 +51,7 @@ const BonCommandePage = () => {
     // Créer un nouveau document PDF
     const doc = new jsPDF();
  // Formater la date au format local (ex: 21/03/2025)
- const dateFormatee = new Date(document.date).toLocaleDateString();
+ const dateFormatee = new Date(date).toLocaleDateString();
     // Ajouter le titre
     doc.setFontSize(18);
     doc.setTextColor(33, 150, 243); // Couleur bleue
@@ -62,7 +62,7 @@ const BonCommandePage = () => {
     doc.setTextColor(0, 0, 0); // Couleur noire
     doc.text(`Numéro: ${numero}`, 15, 30);
     doc.text(`Date: ${dateFormatee }`, 15, 40);
-    doc.text(`Client: ${client.raisonSociale}`, 15, 50);
+    doc.text(`Client: ${client.raison_social}`, 15, 50);
     doc.text(`Réf. BCC: ${refBCC}`, 15, 60);
     doc.text(`Point de Vente: ${pointVente}`, 15, 70);
     doc.text(`Type de Paiement: ${typePaiement}`, 15, 80);
@@ -71,8 +71,8 @@ const BonCommandePage = () => {
     // Préparer les données du tableau
     const tableData = lignes.map((ligne, index) => [
       index + 1,
-      ligne.codeArticle,
-      ligne.famille,
+      ligne.code,
+    
       ligne.libelleArticle,
       ligne.quantite,
       ligne.prixHT.toFixed(2),
@@ -85,7 +85,7 @@ const BonCommandePage = () => {
     const headers = [
       "N°",
       "Code Article",
-      "Famille",
+ 
       "Libellé Article",
       "Quantité",
       "Prix HT",
@@ -279,9 +279,7 @@ const BonCommandePage = () => {
                   <th style={{ padding: "5px", border: "1px solid #ccc" }}>
                     Code Article
                   </th>
-                  <th style={{ padding: "5px", border: "1px solid #ccc" }}>
-                    Famille
-                  </th>
+               
                   <th style={{ padding: "5px", border: "1px solid #ccc" }}>
                     Libelle Article
                   </th>
@@ -309,11 +307,9 @@ const BonCommandePage = () => {
                       {index + 1}
                     </td>
                     <td style={{ padding: "5px", border: "1px solid #ccc" }}>
-                      {ligne.codeArticle}
+                      {ligne.code}
                     </td>
-                    <td style={{ padding: "5px", border: "1px solid #ccc" }}>
-                      {ligne.famille}
-                    </td>
+                 
                     <td style={{ padding: "5px", border: "1px solid #ccc" }}>
                       {ligne.libelleArticle}
                     </td>

@@ -44,6 +44,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import ProgressBarPending from "./ProgressBarPending/ProgressBarPending";
 import { useFormik } from "formik";
+import {useLocation} from 'react-router-dom'
 const validationSchema = Yup.object().shape({
   numero: Yup.string().required("Le numéro est obligatoire"),
   date: Yup.date().required("La date est obligatoire"),
@@ -61,6 +62,7 @@ const validationSchema = Yup.object().shape({
 
 });
 const DocumentConsulter = ({ typeDocument }) => {
+  const location = useLocation()
   const [documents, setDocuments] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -68,6 +70,16 @@ const DocumentConsulter = ({ typeDocument }) => {
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [typeAchat, setTypeAchat] = useState("Bon Commande");
   const navigate = useNavigate();
+  const today = new Date();
+  const fiveDaysLater = new Date();
+  fiveDaysLater.setDate(today.getDate() + 5);
+
+  // Formater les dates au format yyyy-mm-dd
+  const formatDate = (date) => {
+    return date.toISOString().split("T")[0];
+  };
+  const{factId} = location.state || {}
+  console.log(factId)
   const itemsPerPage = 10;
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -99,7 +111,7 @@ const DocumentConsulter = ({ typeDocument }) => {
           prixTTC: 0,
 
           libelleArticle: "",
-          codeArticle: "",
+          code: "",
         },
       ],
     },
@@ -186,7 +198,7 @@ const DocumentConsulter = ({ typeDocument }) => {
       typePaiement: selectedDocument.typePaiement || "",
       commentaire: selectedDocument.commentaire || "",
     };
-
+    console.log(documentData);
     navigate(`/${typeAchat.toLowerCase().replace(" ", "-")}`, {
       state: await documentData,
     });
@@ -213,6 +225,7 @@ const DocumentConsulter = ({ typeDocument }) => {
       confirmButtonColor: "#d33",
       cancelButtonColor: "#3085d6",
       confirmButtonText: "Oui, supprimer !",
+       cancelButtonText: "Annuler",
     }).then((result) => {
       if (result.isConfirmed) {
         const endpoint = typeDocument === "Facture"
@@ -246,7 +259,7 @@ const DocumentConsulter = ({ typeDocument }) => {
     // Informations client
     const clientInfo = typeDocument === "Facture"
       ? document.client?.nom_prenom
-      : document.client?.raisonSociale;
+      : document.client?.nom_prenom;
 
     // Ajouter le titre
     doc.setFontSize(18);
@@ -270,8 +283,8 @@ const DocumentConsulter = ({ typeDocument }) => {
     // Préparer les données du tableau
     const tableData = (document.lignes || []).map((ligne, index) => [
       index + 1,
-      ligne.codeArticle || '',
-      ligne.famille || '',
+      ligne.code || '',
+
       ligne.libelleArticle || '',
       ligne.quantite || 0,
       (ligne.prixHT || 0).toFixed(2),
@@ -284,7 +297,7 @@ const DocumentConsulter = ({ typeDocument }) => {
     const headers = [
       "N°",
       "Code Article",
-      "Famille",
+
       "Libellé Article",
       "Quantité",
       "Prix HT",
@@ -419,7 +432,7 @@ const DocumentConsulter = ({ typeDocument }) => {
     const m = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
     const formattedDate = `${d.getFullYear()}-${m}-${day}`;
-console.log(type_achat)
+    console.log(type_achat)
     const prefix = type_achat === "Devis" ? "DV" : type_achat === "Bon Commande" ? "BC" : "BL";
     const prefixPV = "PV";
 
@@ -537,7 +550,7 @@ console.log(type_achat)
               </TableHead>
               <TableBody>
                 {currentDocuments.map((doc) => (
-                  <TableRow key={doc._id}>
+                  <TableRow style={{background: doc._id===factId ?'#CFCED2' : ''}}  key={doc._id}>
                     <TableCell>{typeDocument === "Facture" ? doc.numFacture : doc.numero}</TableCell>
                     <TableCell>
                       {new Date(doc.date).toLocaleDateString()}
@@ -547,7 +560,7 @@ console.log(type_achat)
 
                       {typeDocument === "Facture"
                         ? doc?.client?.nom_prenom
-                        : doc.client?.raison_social}
+                        : doc.client?.nom_prenom}
                     </TableCell>
 
                     <TableCell>{(doc.totalHT || 0).toFixed(2)}</TableCell>
@@ -665,21 +678,37 @@ console.log(type_achat)
               </Typography>
             </DialogTitle>
             <DialogContent>
-              <DatePicker
-                label={`Sélectionnez une date ${typeAchat}`} 
-
-
-                className="w-full font-light mt-2"
-                value={formik.values.date}
-                onChange={(newValue) => {
-                  formik.setFieldValue('date', newValue); // ✅ mettre à jour formik
-                  handelnumero(newValue, typeAchat);   // ✅ ta logique perso
-               }}
-                InputLabelProps={{ shrink: true }}
-                error={formik.touched.date && Boolean(formik.errors.date)}
-                helperText={formik.touched.date && formik.errors.date}
-                size="small"
-              />
+             <TextField
+                              label="Date"
+                              name="date"
+                              type="date"
+                              fullWidth
+                              margin="normal"
+                              value={formik.values.date}
+                              onChange={(e) => {
+                                formik.handleChange(e);
+                                handelnumero(e.target.value, typeDocument);
+                              }}
+                              InputLabelProps={{ shrink: true }}
+                              error={formik.touched.date && Boolean(formik.errors.date)}
+                              helperText={formik.touched.date && formik.errors.date}
+                              size="small"
+                              InputProps={{
+                                inputProps: {
+                                  min: formatDate(today),
+                                  max: formatDate(fiveDaysLater),
+                                },
+                              }}
+                              sx={{
+                                border: "none",
+                                boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+                                borderRadius: "8px",
+                                backgroundColor: "#fff",
+                                "& fieldset": {
+                                  border: "none", // Supprimer le border du Select
+                                },
+                              }}
+                            />
               <TextField
                 label="Numéro"
                 name="numero"
@@ -748,8 +777,8 @@ console.log(type_achat)
                 handleGeneration()
                 setGenerateDocument(false)
               }} color="primary"
-              variant="outlined" size="small"
-              disabled={!formik.values.date && !formik.values.numero}
+                variant="outlined" size="small"
+                disabled={!formik.values.date && !formik.values.numero}
               >
                 Générer
               </Button>

@@ -236,7 +236,7 @@ console.log(familleArticles)
                           <IconButton
                             color="info"
                             component={Link}
-                            to={`/details/${familleArticle._id}`}
+                            to={`/FamilleArticle/${familleArticle._id}`}
                             aria-label="détails"
                             style={{ fontSize: "1.5rem" }}
                           >

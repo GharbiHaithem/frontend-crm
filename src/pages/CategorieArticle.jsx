@@ -233,7 +233,7 @@ export default function CategorieArticle() {
                           <IconButton
                             color="info"
                             component={Link}
-                            to={`/details/${categorieArticle._id}`}
+                            to={`/categorieArticle/${categorieArticle._id}`}
                             aria-label="détails"
                             style={{ fontSize: "1.5rem" }}
                           >

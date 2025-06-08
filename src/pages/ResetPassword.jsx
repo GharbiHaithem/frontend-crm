@@ -29,7 +29,7 @@ const ResetPassword = () => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded">
+        <button type="submit" className="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg  w-full">
           Réinitialiser
         </button>
       </form>

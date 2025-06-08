@@ -78,7 +78,7 @@ const BonCommande = () => {
       remise: 0,
       tva: 0,
       prixTTC: 0,
-      famille: "",
+   
       libelleArticle: "",
       codeArticle: "",
     };
@@ -199,7 +199,7 @@ const BonCommande = () => {
           code: client.code,
           adresse: client.adresse,
           matricule: client.matricule_fiscale,
-          raisonSociale: client.raison_social,
+          raisonSociale: client.nom_prenom,
           telephone: client.telephone,
         });
         setClient(client._id); // Mettre à jour l'ID du client dans l'état
@@ -280,7 +280,7 @@ const BonCommande = () => {
       <Box sx={{ display: "flex" }}>
         <Sidenav />
         <Box component="main" sx={{ flexGrow: 1, p: 3, paddingTop: "350px" }}>
-          <h1>Bon Commandesw</h1>
+          <h1>Bon Commande</h1>
           <div className="document-form">
             <Box
               sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}
@@ -390,9 +390,7 @@ const BonCommande = () => {
                   <th style={{ padding: "5px", border: "1px solid #ccc" }}>
                     Code Article
                   </th>
-                  <th style={{ padding: "5px", border: "1px solid #ccc" }}>
-                    Famille
-                  </th>
+                 
                   <th style={{ padding: "5px", border: "1px solid #ccc" }}>
                     Libelle Article
                   </th>
@@ -434,13 +432,7 @@ const BonCommande = () => {
                         size="small"
                       />
                     </td>
-                    <td>
-                      <TextField
-                        type="string"
-                        value={ligne.famille || ""} // Afficher la famille
-                        size="small"
-                      />
-                    </td>
+                  
                     <td>
                       <TextField
                         type="string"

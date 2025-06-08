@@ -38,19 +38,19 @@ const validationSchema = Yup.object().shape({
   pointVente: Yup.string().required("pointVente  est obligatoire"),
   typePaiement: Yup.string().required("typePaiement  est obligatoire"),
   commentaire: Yup.string().required("commentaire  est obligatoire"),
- 
+
 });
 
 const DocumentForm = ({ typeDocument }) => {
-    const[client,setClient] = useState([])
-     const[selectedClient,setSelectedClient] = useState('')
-    useEffect(()=>{
-      axios.get(`http://localhost:5000/clients/all`).then((result)=>setClient(result.data)) 
-    },[])
-    console.log(client)
+  const [client, setClient] = useState([])
+  const [selectedClient, setSelectedClient] = useState('')
+  useEffect(() => {
+    axios.get(`http://localhost:5000/clients/all`).then((result) => setClient(result.data))
+  }, [])
+  console.log(client)
   console.log(typeDocument)
   const navigate = useNavigate();
-const today = new Date();
+  const today = new Date();
   const fiveDaysLater = new Date();
   fiveDaysLater.setDate(today.getDate() + 5);
 
@@ -88,15 +88,16 @@ const today = new Date();
           remise: 0,
           tva: 0,
           prixTTC: 0,
-        
+
           libelleArticle: "",
-          codeArticle: "",
+          code: "",
         },
       ],
     },
     validationSchema,
     onSubmit: async (values) => {
       try {
+        console.log("Données envoyées :", values);
         const documentData = {
           typeDocument: values.type_achat,
           numero: values.numero,
@@ -110,7 +111,7 @@ const today = new Date();
           typePaiement: values.typePaiement,
           commentaire: values.commentaire,
         };
-
+  console.log(documentData)
         const response = await axios.post(
           "http://localhost:5000/entetes/devis",
           documentData
@@ -133,94 +134,96 @@ const today = new Date();
       }
     },
   });
- useEffect(()=>{
-  if(selectedClient){
-axios.get(`http://localhost:5000/clients/${selectedClient}`).then((response)=>{
-  console.log(response.data)
-  formik.setFieldValue("clientDetails", {
+  useEffect(() => {
+    if (selectedClient) {
+      axios.get(`http://localhost:5000/clients/${selectedClient}`).then((response) => {
+        console.log(response.data)
+        formik.setFieldValue("client", selectedClient)
+        formik.setFieldValue("clientDetails", {
           code: response.data.code,
           adresse: response.data.adresse,
           matricule: response.data.matricule_fiscale,
           raisonSociale: response.data.raison_social,
           telephone: response.data.telephone,
         })
-})
-  }
-  
- },[selectedClient])
- 
+      })
+    }
+
+  }, [selectedClient])
+
 
   useEffect(() => {
     handelnumero(formik.values.date, typeDocument);
     handelnumeroEntete(formik.values.numero)
-  }, [formik.values.date, typeDocument ,formik.values.numero]);
-const generateNumero = (prefix, y, m, d, count) => {
-  return `${prefix}${y}${m}${d}${String(count).padStart(3, "0")}`;
-};
+  }, [formik.values.date, typeDocument, formik.values.numero]);
+  const generateNumero = (prefix, y, m, d, count) => {
+    return `${prefix}${y}${m}${d}${String(count).padStart(3, "0")}`;
+  };
 
-const handelnumero = async (date, type_achat) => {
-  if (!date) return;
+  const handelnumero = async (date, type_achat) => {
+    if (!date) return;
 
-  const d = new Date(date);
-  const y = d.getFullYear().toString().slice(-2);
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  const formattedDate = `${d.getFullYear()}-${m}-${day}`;
+    const d = new Date(date);
+    const y = d.getFullYear().toString().slice(-2);
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const formattedDate = `${d.getFullYear()}-${m}-${day}`;
 
-  const prefix = type_achat === "Devis" ? "DV" : type_achat === "Bon Commande" ? "BC" : "BL";
-  const prefixPV = "PV";
+    const prefix = type_achat === "Devis" ? "DV" : type_achat === "Bon Commande" ? "BC" : "BL";
+    const prefixPV = "PV";
 
-  try {
-    const response = await axios.get(
-      `http://localhost:5000/entetes/total-par-date/${type_achat}/${formattedDate}`
-    );
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/entetes/total-par-date/${type_achat}/${formattedDate}`
+      );
 
-    let count = response.data.count || 0;
-    let numeroValide = false;
-    let numero = "";
+      let count = response.data.count || 0;
+      let numeroValide = false;
+      let numero = "";
 
-    while (!numeroValide) {
-      count++;
-      numero = generateNumero(prefix, y, m, day, count);
+      while (!numeroValide) {
+        count++;
+        numero = generateNumero(prefix, y, m, day, count);
 
-      try {
-        await axios.post(`http://localhost:5000/entetes/verifyNumero`, { numero });
-        numeroValide = true; // si pas d'erreur, c’est OK
-        
-      } catch (error) {
-        if (error.response?.data?.message !== "Numero reservé pour autre devis") {
-          console.error("Erreur lors de la vérification :", error);
-          break;
+        try {
+          await axios.post(`http://localhost:5000/entetes/verifyNumero`, { numero });
+          numeroValide = true; // si pas d'erreur, c’est OK
+
+        } catch (error) {
+          if (error.response?.data?.message !== "Numero reservé pour autre devis") {
+            console.error("Erreur lors de la vérification :", error);
+            break;
+          }
+          // sinon, continue la boucle pour essayer le suivant
         }
-        // sinon, continue la boucle pour essayer le suivant
       }
+
+      formik.setFieldValue("numero", numero);
+      formik.setFieldValue("pointVente", generateNumero(prefixPV, y, m, day, count));
+
+    } catch (error) {
+      console.error("Erreur globale génération numéro :", error);
     }
-
-    formik.setFieldValue("numero", numero);
-    formik.setFieldValue("pointVente", generateNumero(prefixPV, y, m, day, count));
-
-  } catch (error) {
-    console.error("Erreur globale génération numéro :", error);
-  }
-};
+  };
 
 
   const ajouterLigne = () => {
     const nouvelleLigne = {
+        code: "",
       quantite: 1,
       prixHT: 0,
       remise: 0,
       tva: 0,
       prixTTC: 0,
-    
+
       libelleArticle: "",
-      codeArticle: "",
+    
     };
     formik.setFieldValue("lignes", [...formik.values.lignes, nouvelleLigne]);
   };
 
   const supprimerLigne = (index) => {
-   
+
     const nouvellesLignes = formik.values.lignes.filter((_, i) => i !== index);
     formik.setFieldValue("lignes", nouvellesLignes);
     calculerTotal(nouvellesLignes);
@@ -235,7 +238,7 @@ const handelnumero = async (date, type_achat) => {
     const nouvellesLignes = [...formik.values.lignes];
     nouvellesLignes[index][key] = value;
 
-    if (key === "codeArticle" && value.length > 0) {
+    if (key === "code" && value.length > 0) {
       fetchArticleByCode(value, index);
     }
 
@@ -260,7 +263,7 @@ const handelnumero = async (date, type_achat) => {
   const handleCancel = () => {
     navigate("/Home");
   };
-const[erreurArticle,setErreurArticle]=useState(null)
+  const [erreurArticle, setErreurArticle] = useState(null)
   const ouvrirFenetreGeneration = () => {
     if (enregistrementReussi) {
       setOpenModal(true);
@@ -308,7 +311,7 @@ const[erreurArticle,setErreurArticle]=useState(null)
     success: '',
     err: ''
   });
-console.log(selectedClient)
+  console.log(selectedClient)
   const fetchClientByCode = (code) => {
     axios
       .get(`http://localhost:5000/clients/code/${code}`)
@@ -342,26 +345,26 @@ console.log(selectedClient)
       .get(`http://localhost:5000/articles/code/${code}`)
       .then((response) => {
         const article = response.data;
-        
-       
-        
-        
-            const nouvellesLignes = [...formik.values.lignes];
-            nouvellesLignes[index] = {
-              ...nouvellesLignes[index],
-              libelleArticle: article.libelle,
-              prixHT: article.prix_brut,
-              tva: article.tva,
-           
-              prixTTC: calculerPrixTTC(
-                article.prix_brut,
-                nouvellesLignes[index].remise,
-                article.tva
-              ),
-            };
-            formik.setFieldValue("lignes", nouvellesLignes);
-            calculerTotal(nouvellesLignes);
-        
+
+    console.log(article)
+
+
+        const nouvellesLignes = [...formik.values.lignes];
+        nouvellesLignes[index] = {
+          ...nouvellesLignes[index],
+          libelleArticle: article.libelle,
+          prixHT: article.prix_brut,
+          tva: article.tva,
+          code: article.code,
+          prixTTC: calculerPrixTTC(
+            article.prix_brut,
+            nouvellesLignes[index].remise,
+            article.tva
+          ),
+        };
+        formik.setFieldValue("lignes", nouvellesLignes);
+        calculerTotal(nouvellesLignes);
+
       })
       .catch((error) => {
         setErreurArticle(error.response.data.message)
@@ -374,6 +377,7 @@ console.log(selectedClient)
           tva: 0,
           famille: "",
           prixTTC: 0,
+          code:''
         };
         formik.setFieldValue("lignes", nouvellesLignes);
         calculerTotal(nouvellesLignes);
@@ -381,16 +385,17 @@ console.log(selectedClient)
   };
   const handelnumeroEntete = async (num) => {
     console.log(num)
- 
-    await axios.post(`http://localhost:5000/entetes/verifyNumero`, { numero: num }).then((result) =>{ setNumEntete({ success: result.data.message, err: "" })
-     formik.setFieldValue('numero', num)
-  }).catch((erreur) => setNumEntete({ success: "", err: erreur.response.data.message }))
+
+    await axios.post(`http://localhost:5000/entetes/verifyNumero`, { numero: num }).then((result) => {
+      setNumEntete({ success: result.data.message, err: "" })
+      formik.setFieldValue('numero', num)
+    }).catch((erreur) => setNumEntete({ success: "", err: erreur.response.data.message }))
   }
-  const[selectCodeArticle,setSelectCodeArticle] =useState('')
-    const[article,setArticle] =useState('')
-  useEffect(()=>{
-    axios.get(`http://localhost:5000/articles/`).then((result)=>setArticle(result.data))
-  },[])
+  const [selectCodeArticle, setSelectCodeArticle] = useState('')
+  const [article, setArticle] = useState('')
+  useEffect(() => {
+    axios.get(`http://localhost:5000/articles/`).then((result) => setArticle(result.data))
+  }, [])
   console.log(article)
   return (
     <>
@@ -400,15 +405,15 @@ console.log(selectedClient)
         <Sidenav />
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
           <Typography variant="h4" gutterBottom style={{
-                          fontWeight: "bold",
-                          textAlign: "start",
-                          color: "#1976d2",
-                          fontSize: "1.8rem",
-                          padding: "10px",
-                          background:"white",
-                          width:"100%"
-                        }}>
-          Nouveau  {typeDocument}
+            fontWeight: "bold",
+            textAlign: "start",
+            color: "#1976d2",
+            fontSize: "1.8rem",
+            padding: "10px",
+            background: "white",
+            width: "100%"
+          }}>
+            Nouveau  {typeDocument}
           </Typography>
           <form onSubmit={formik.handleSubmit}>
             <Box sx={{ display: "flex", gap: 2, mb: 4 }}>
@@ -417,32 +422,32 @@ console.log(selectedClient)
                 <Typography variant="h6" gutterBottom>
                   Client
                 </Typography>
-<FormControl fullWidth>
-  <InputLabel id="client-select-label">Client</InputLabel>
-  <Select
-    labelId="client-select-label"
-    id="client-select"
-    value={selectedClient || ""} // contrôler la valeur sélectionnée
-    onChange={(e) => setSelectedClient(e.target.value)}
-    label="Client"
-    size="small"
-    sx={{
-      border: "none",
-      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
-      borderRadius: "8px",
-      backgroundColor: "#fff",
-      "& fieldset": {
-        border: "none",
-      },
-    }}
-  >
-    {client?.map((c) => (
-      <MenuItem key={c?._id} value={c?._id}>
-        {c?.nom_prenom}
-      </MenuItem>
-    ))}
-  </Select>
-</FormControl>
+                <FormControl fullWidth>
+                  <InputLabel id="client-select-label">Client</InputLabel>
+                  <Select
+                    labelId="client-select-label"
+                    id="client-select"
+                    value={selectedClient || ""} // contrôler la valeur sélectionnée
+                    onChange={(e) => setSelectedClient(e.target.value)}
+                    label="Client"
+                    size="small"
+                    sx={{
+                      border: "none",
+                      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+                      borderRadius: "8px",
+                      backgroundColor: "#fff",
+                      "& fieldset": {
+                        border: "none",
+                      },
+                    }}
+                  >
+                    {client?.map((c) => (
+                      <MenuItem key={c?._id} value={c?._id}>
+                        {c?.nom_prenom}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
 
                 <TextField
                   label="Code"
@@ -471,13 +476,13 @@ console.log(selectedClient)
 
                       }
                     },
-                      border: "none",
-      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
-      borderRadius: "8px",
-      backgroundColor: "#fff",
-      "& fieldset": {
-        border: "none", // Supprimer le border du Select
-      },
+                    border: "none",
+                    boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+                    borderRadius: "8px",
+                    backgroundColor: "#fff",
+                    "& fieldset": {
+                      border: "none", // Supprimer le border du Select
+                    },
                   }}
                   InputProps={{
                     style: {
@@ -485,7 +490,7 @@ console.log(selectedClient)
                       borderRadius: '8px'
                     }
                   }}
-  
+
                   value={formik.values.clientDetails.code}
                   onChange={(e) => {
                     formik.handleChange(e);
@@ -528,15 +533,15 @@ console.log(selectedClient)
                     formik.errors.clientDetails?.adresse
                   }
                   disabled={true}
-                    sx={{
-      border: "none",
-      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
-      borderRadius: "8px",
-      backgroundColor: "#fff",
-      "& fieldset": {
-        border: "none", // Supprimer le border du Select
-      },
-    }}
+                  sx={{
+                    border: "none",
+                    boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+                    borderRadius: "8px",
+                    backgroundColor: "#fff",
+                    "& fieldset": {
+                      border: "none", // Supprimer le border du Select
+                    },
+                  }}
                 />
                 <TextField
                   label="Matricule"
@@ -555,15 +560,15 @@ console.log(selectedClient)
                     formik.errors.clientDetails?.matricule
                   }
                   disabled={true}
-                    sx={{
-      border: "none",
-      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
-      borderRadius: "8px",
-      backgroundColor: "#fff",
-      "& fieldset": {
-        border: "none", // Supprimer le border du Select
-      },
-    }}
+                  sx={{
+                    border: "none",
+                    boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+                    borderRadius: "8px",
+                    backgroundColor: "#fff",
+                    "& fieldset": {
+                      border: "none", // Supprimer le border du Select
+                    },
+                  }}
                 />
                 <TextField
                   label="Raison Sociale"
@@ -582,15 +587,15 @@ console.log(selectedClient)
                     formik.errors.clientDetails?.raisonSociale
                   }
                   disabled={true}
-                    sx={{
-      border: "none",
-      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
-      borderRadius: "8px",
-      backgroundColor: "#fff",
-      "& fieldset": {
-        border: "none", // Supprimer le border du Select
-      },
-    }}
+                  sx={{
+                    border: "none",
+                    boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+                    borderRadius: "8px",
+                    backgroundColor: "#fff",
+                    "& fieldset": {
+                      border: "none", // Supprimer le border du Select
+                    },
+                  }}
                 />
                 <TextField
                   label="Téléphone"
@@ -609,15 +614,15 @@ console.log(selectedClient)
                     formik.errors.clientDetails?.telephone
                   }
                   disabled={true}
-                    sx={{
-      border: "none",
-      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
-      borderRadius: "8px",
-      backgroundColor: "#fff",
-      "& fieldset": {
-        border: "none", // Supprimer le border du Select
-      },
-    }}
+                  sx={{
+                    border: "none",
+                    boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+                    borderRadius: "8px",
+                    backgroundColor: "#fff",
+                    "& fieldset": {
+                      border: "none", // Supprimer le border du Select
+                    },
+                  }}
                 />
               </Box>
 
@@ -642,24 +647,24 @@ console.log(selectedClient)
                   error={formik.touched.date && Boolean(formik.errors.date)}
                   helperText={formik.touched.date && formik.errors.date}
                   size="small"
-                 InputProps={{
-    inputProps: {
-      min: formatDate(today),
-      max: formatDate(fiveDaysLater),
-    },
-  }}
-    sx={{
-      border: "none",
-      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
-      borderRadius: "8px",
-      backgroundColor: "#fff",
-      "& fieldset": {
-        border: "none", // Supprimer le border du Select
-      },
-    }}
+                  InputProps={{
+                    inputProps: {
+                      min: formatDate(today),
+                      max: formatDate(fiveDaysLater),
+                    },
+                  }}
+                  sx={{
+                    border: "none",
+                    boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+                    borderRadius: "8px",
+                    backgroundColor: "#fff",
+                    "& fieldset": {
+                      border: "none", // Supprimer le border du Select
+                    },
+                  }}
                 />
                 <TextField
-    
+
                   label="Numéro"
                   name="numero"
                   fullWidth
@@ -686,13 +691,13 @@ console.log(selectedClient)
 
                       }
                     },
-                       border: "none",
-      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
-      borderRadius: "8px",
-      backgroundColor: "#fff",
-      "& fieldset": {
-        border: "none", // Supprimer le border du Select
-      },
+                    border: "none",
+                    boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+                    borderRadius: "8px",
+                    backgroundColor: "#fff",
+                    "& fieldset": {
+                      border: "none", // Supprimer le border du Select
+                    },
                   }}
                   error={
                     formik.touched.numero &&
@@ -726,15 +731,15 @@ console.log(selectedClient)
                     formik.touched?.refBCC &&
                     formik.errors?.refBCC
                   }
-                    sx={{
-      border: "none",
-      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
-      borderRadius: "8px",
-      backgroundColor: "#fff",
-      "& fieldset": {
-        border: "none", // Supprimer le border du Select
-      },
-    }}
+                  sx={{
+                    border: "none",
+                    boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+                    borderRadius: "8px",
+                    backgroundColor: "#fff",
+                    "& fieldset": {
+                      border: "none", // Supprimer le border du Select
+                    },
+                  }}
                 />
                 <TextField
                   label="Point de Vente"
@@ -753,49 +758,49 @@ console.log(selectedClient)
                     formik.touched.pointVente &&
                     formik.errors.pointVente
                   }
-                    sx={{
-      border: "none",
-      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
-      borderRadius: "8px",
-      backgroundColor: "#fff",
-      "& fieldset": {
-        border: "none", // Supprimer le border du Select
-      },
-    }}
+                  sx={{
+                    border: "none",
+                    boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+                    borderRadius: "8px",
+                    backgroundColor: "#fff",
+                    "& fieldset": {
+                      border: "none", // Supprimer le border du Select
+                    },
+                  }}
                 />
-              <FormControl fullWidth margin="normal" size="small">
-  <InputLabel id="type-paiement-label">Type de Paiement</InputLabel>
-  <Select
-    labelId="type-paiement-label"
-    id="typePaiement"
-    name="typePaiement"
-    value={formik.values.typePaiement}
-    onChange={formik.handleChange}
-    error={
-      formik.touched?.typePaiement &&
-      Boolean(formik.errors?.typePaiement)
-    }
-    sx={{
-      border: "none",
-      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
-      borderRadius: "8px",
-      backgroundColor: "#fff",
-      "& fieldset": {
-        border: "none",
-      },
-    }}
-  >
-    <MenuItem value="chèque">Chèque</MenuItem>
-    <MenuItem value="espèce">Espèce</MenuItem>
-    <MenuItem value="effet">Effet</MenuItem>
-  </Select>
-  {formik.touched?.typePaiement && formik.errors?.typePaiement && (
-    <FormHelperText error>{formik.errors.typePaiement}</FormHelperText>
-  )}
-</FormControl>
+                <FormControl fullWidth margin="normal" size="small">
+                  <InputLabel id="type-paiement-label">Type de Paiement</InputLabel>
+                  <Select
+                    labelId="type-paiement-label"
+                    id="typePaiement"
+                    name="typePaiement"
+                    value={formik.values.typePaiement}
+                    onChange={formik.handleChange}
+                    error={
+                      formik.touched?.typePaiement &&
+                      Boolean(formik.errors?.typePaiement)
+                    }
+                    sx={{
+                      border: "none",
+                      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+                      borderRadius: "8px",
+                      backgroundColor: "#fff",
+                      "& fieldset": {
+                        border: "none",
+                      },
+                    }}
+                  >
+                    <MenuItem value="chèque">Chèque</MenuItem>
+                    <MenuItem value="espèce">Espèce</MenuItem>
+                    <MenuItem value="effet">Effet</MenuItem>
+                  </Select>
+                  {formik.touched?.typePaiement && formik.errors?.typePaiement && (
+                    <FormHelperText error>{formik.errors.typePaiement}</FormHelperText>
+                  )}
+                </FormControl>
 
                 <TextField
-                
+
                   label="Commentaire"
                   name="commentaire"
                   fullWidth
@@ -820,7 +825,7 @@ console.log(selectedClient)
             <Typography variant="h6" gutterBottom>
               Lignes du document
             </Typography>
-         { formik.values.lignes?.length>0 &&   <Box sx={{ overflowX: "auto" }}>
+            {formik.values.lignes?.length > 0 && <Box sx={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
                   <tr>
@@ -830,7 +835,7 @@ console.log(selectedClient)
                     <th style={{ padding: "8px", border: "1px solid #ddd" }}>
                       Code Article
                     </th>
-                  
+
                     <th style={{ padding: "8px", border: "1px solid #ddd" }}>
                       Libellé Article
                     </th>
@@ -860,45 +865,46 @@ console.log(selectedClient)
                       <td style={{ padding: "8px", border: "1px solid #ddd" }}>
                         {index + 1}
                       </td>
-                    <td style={{ padding: "8px", border: "1px solid #ddd" }}>
-  <FormControl fullWidth sx={{ minWidth: 200 }}>
-    <InputLabel id="client-select-label">code article</InputLabel>
-    <Select
-      labelId="client-select-label"
-      id="client-select"
-      value={ligne.codeArticle || ""}
-      onChange={(e) =>
-        mettreAJourLigne(index, "codeArticle", e.target.value)
-      }
-      label="article"
-      size="small"
-      sx={{
-        width: "100%", // prendra la largeur du FormControl
-        border: "none",
-        boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
-        borderRadius: "8px",
-        backgroundColor: "#fff",
-        "& fieldset": {
-          border: "none",
-        },
-      }}
-    >
-      {article && article.map((c) => (
-        <MenuItem key={c?._id} value={c?.code}>
-          {c?.code}
-        </MenuItem>
-      ))}
-    </Select>
-  </FormControl>
+                      <td style={{ padding: "8px", border: "1px solid #ddd" }}>
+                        <FormControl fullWidth sx={{ minWidth: 200 }}>
+                          <InputLabel id="client-select-label">code article</InputLabel>
+                          <Select
+                            labelId="client-select-label"
+                            id="client-select"
+                            value={ligne.code || ""}
+                            onChange={(e) =>{
+                              mettreAJourLigne(index, "code", e.target.value)
+                              fetchArticleByCode( e.target.value , index)}
+                            }
+                            label="article"
+                            size="small"
+                            sx={{
+                              width: "100%", // prendra la largeur du FormControl
+                              border: "none",
+                              boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+                              borderRadius: "8px",
+                              backgroundColor: "#fff",
+                              "& fieldset": {
+                                border: "none",
+                              },
+                            }}
+                          >
+                            {article && article.map((c) => (
+                              <MenuItem key={c?._id} value={c?.code}>
+                                {c?.code}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
 
-  {erreurArticle && (
-    <span className="text-red-500 text-xs font-light">
-      {erreurArticle}
-    </span>
-  )}
-</td>
+                        {erreurArticle && (
+                          <span className="text-red-500 text-xs font-light">
+                            {erreurArticle}
+                          </span>
+                        )}
+                      </td>
 
-                    
+
                       <td style={{ padding: "8px", border: "1px solid #ddd" }}>
                         <TextField
                           value={ligne.libelleArticle}
@@ -964,15 +970,15 @@ console.log(selectedClient)
                         />
                       </td>
                       <td style={{ padding: "8px", border: "1px solid #ddd" }}>
-                     
-                          <Button
-                            onClick={() => supprimerLigne(index)}
-                            size="small"
-                            color="error"
-                          >
-                            Supprimer
-                          </Button>
-                        
+
+                        <Button
+                          onClick={() => supprimerLigne(index)}
+                          size="small"
+                          color="error"
+                        >
+                          Supprimer
+                        </Button>
+
                       </td>
                     </tr>
                   ))}

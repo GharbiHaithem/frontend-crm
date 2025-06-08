@@ -1,185 +1,113 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Box, Typography, Button, TextField } from "@mui/material";
 import Navbar from "../components/Navbar";
 import Sidenav from "../components/Sidenav";
-import DetailsFacture from "./DetailsFacture";
+import DetailsFacture from "../components/DetailsFacture";
 
 const DocumentDetails = () => {
-  const { typeDocument, id } = useParams(); // Récupérer le type de document et l'ID
+  const { typeDocument, id } = useParams();
   const navigate = useNavigate();
   const [document, setDocument] = useState(null);
 
   useEffect(() => {
     axios
       .get(`http://localhost:5000/entetes/${id}`)
-      .then((response) =>{
-        console.log(response)
-        setDocument(response.data)})
+      .then((response) => setDocument(response.data))
       .catch((error) => console.error("Erreur de chargement", error));
   }, [id]);
 
-  if (!document) return <DetailsFacture/>;
+if (!document) return <DetailsFacture/>;
 
   return (
     <>
       <Navbar />
-      <Box height={30} />
-      <Box sx={{ display: "flex" }}>
+      <div className="flex">
         <Sidenav />
-        <Box component="main" sx={{ flexGrow: 1, p: 3, paddingTop: "10px" }}>
-          <Typography variant="h4">
+        <main className="flex-grow p-6 space-y-6">
+          <h1 className="text-3xl font-bold text-gray-800">
             Détails du {typeDocument.replace("-", " ")}
-          </Typography>
-
+          </h1>
+     <button
+        onClick={() => navigate(`/${typeDocument}-consulter`)}
+        className="mb-4 inline-flex items-center text-blue-600 hover:underline"
+      >
+        ← Retour à la liste
+      </button>
           {/* Section Client */}
-          <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2, my: 2 }}>
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="h6">Client</Typography>
-              <TextField
-                label="Code"
-                fullWidth
-                margin="normal"
-                size="small"
-                value={document.client.code || ""}
-                disabled
-              />
-              <TextField
-                label="Adresse"
-                fullWidth
-                margin="normal"
-                size="small"
-                value={document.client.adresse || ""}
-                disabled
-              />
-              <TextField
-                label="Matricule"
-                fullWidth
-                margin="normal"
-                size="small"
-                value={document.client.matricule_fiscale || ""}
-                disabled
-              />
-              <TextField
-                label="Raison Sociale"
-                fullWidth
-                margin="normal"
-                size="small"
-                value={document.client.raison_social || ""}
-                disabled
-              />
-              <TextField
-                label="Téléphone"
-                fullWidth
-                margin="normal"
-                size="small"
-                value={document.client.telephone || ""}
-                disabled
-              />
-            </Box>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white shadow rounded-2xl p-4">
+              <h2 className="text-xl font-semibold mb-4 text-gray-700">Client</h2>
+              <div className="space-y-2">
+                <p><strong>Code :</strong> {document.client.code}</p>
+                <p><strong>Adresse :</strong> {document.client.adresse}</p>
+                <p><strong>Matricule :</strong> {document.client.matricule_fiscale}</p>
+                <p><strong>Raison Sociale :</strong> {document.client.raison_social}</p>
+                <p><strong>Téléphone :</strong> {document.client.telephone}</p>
+              </div>
+            </div>
 
             {/* Section Générale */}
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="h6">Général</Typography>
-              <TextField
-                label="Numéro"
-                fullWidth
-                margin="normal"
-                value={document.numero || ""}
-                size="small"
-                disabled
-              />
-              <TextField
-                label="Date"
-                type="date"
-                fullWidth
-                margin="normal"
-                value={new Date(document.date).toISOString().split("T")[0]}
-                InputLabelProps={{ shrink: true }}
-                size="small"
-                disabled
-              />
-              <TextField
-                label="Réf. BCC"
-                fullWidth
-                margin="normal"
-                value={document.referenceCommande || ""}
-                size="small"
-                disabled
-              />
-              <TextField
-                label="Point de Vente"
-                fullWidth
-                margin="normal"
-                value={document.pointVente || ""}
-                size="small"
-                disabled
-              />
-              <TextField
-                label="Type de Paiement"
-                fullWidth
-                margin="normal"
-                value={document.typePaiement || ""}
-                size="small"
-                disabled
-              />
-              <TextField
-                label="Commentaire"
-                fullWidth
-                margin="normal"
-                value={document.commentaire || ""}
-                multiline
-                rows={4}
-                size="small"
-                disabled
-              />
-            </Box>
-          </Box>
+            <div className="bg-white shadow rounded-2xl p-4">
+              <h2 className="text-xl font-semibold mb-4 text-gray-700">Général</h2>
+              <div className="space-y-2">
+                <p><strong>Numéro :</strong> {document.numero}</p>
+                <p><strong>Date :</strong> {new Date(document.date).toLocaleDateString()}</p>
+                <p><strong>Réf. BCC :</strong> {document.referenceCommande}</p>
+                <p><strong>Point de Vente :</strong> {document.pointVente}</p>
+                <p><strong>Type de Paiement :</strong> {document.typePaiement}</p>
+                <p><strong>Commentaire :</strong> {document.commentaire}</p>
+              </div>
+            </div>
+          </div>
 
-          {/* Section Lignes du document */}
-          <Typography variant="h6">Lignes du document :</Typography>
-          <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "20px" }}>
-            <thead>
-              <tr>
-                <th style={{ padding: "5px", border: "1px solid #ccc" }}>N°</th>
-                <th style={{ padding: "5px", border: "1px solid #ccc" }}>Code Article</th>
-                <th style={{ padding: "5px", border: "1px solid #ccc" }}>Famille</th>
-                <th style={{ padding: "5px", border: "1px solid #ccc" }}>Libelle Article</th>
-                <th style={{ padding: "5px", border: "1px solid #ccc" }}>Quantité</th>
-                <th style={{ padding: "5px", border: "1px solid #ccc" }}>Prix HT</th>
-                <th style={{ padding: "5px", border: "1px solid #ccc" }}>Remise</th>
-                <th style={{ padding: "5px", border: "1px solid #ccc" }}>TVA</th>
-                <th style={{ padding: "5px", border: "1px solid #ccc" }}>Prix TTC</th>
-              </tr>
-            </thead>
-            <tbody>
-              {document.lignes.map((ligne, index) => (
-                <tr key={index}>
-                  <td style={{ padding: "5px", border: "1px solid #ccc" }}>{index + 1}</td>
-                  <td style={{ padding: "5px", border: "1px solid #ccc" }}>{ligne.codeArticle}</td>
-                  <td style={{ padding: "5px", border: "1px solid #ccc" }}>{ligne.famille}</td>
-                  <td style={{ padding: "5px", border: "1px solid #ccc" }}>{ligne.libelleArticle}</td>
-                  <td style={{ padding: "5px", border: "1px solid #ccc" }}>{ligne.quantite}</td>
-                  <td style={{ padding: "5px", border: "1px solid #ccc" }}>{ligne.prixHT.toFixed(2)}</td>
-                  <td style={{ padding: "5px", border: "1px solid #ccc" }}>{ligne.remise}</td>
-                  <td style={{ padding: "5px", border: "1px solid #ccc" }}>{ligne.tva}</td>
-                  <td style={{ padding: "5px", border: "1px solid #ccc" }}>{ligne.prixTTC.toFixed(2)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {/* Section Lignes */}
+          <div className="bg-white shadow rounded-2xl p-4">
+            <h2 className="text-xl font-semibold mb-4 text-gray-700">Lignes du document</h2>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm border border-gray-200">
+                <thead>
+                  <tr className="bg-gray-100 text-left">
+                    <th className="p-2 border">N°</th>
+                    <th className="p-2 border">Code Article</th>
+               
+                    <th className="p-2 border">Libelle</th>
+                    <th className="p-2 border">Quantité</th>
+                    <th className="p-2 border">Prix HT</th>
+                    <th className="p-2 border">Remise</th>
+                    <th className="p-2 border">TVA</th>
+                    <th className="p-2 border">Prix TTC</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {document.lignes.map((ligne, index) => (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="p-2 border">{index + 1}</td>
+                      <td className="p-2 border">{ligne.code}</td>
+                 
+                      <td className="p-2 border">{ligne.libelleArticle}</td>
+                      <td className="p-2 border">{ligne.quantite}</td>
+                      <td className="p-2 border">{ligne.prixHT.toFixed(2)} <span className="text-sm font-semibold "> TND</span></td>
+                      <td className="p-2 border">{ligne.remise}</td>
+                      <td className="p-2 border">{ligne.tva}  <span className="text-sm font-semibold "> %</span></td>
+                      <td className="p-2 border">{ligne.prixTTC.toFixed(2)} <span className="text-sm font-semibold "> TND</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-          {/* Section Totaux */}
-          <Typography variant="h6">Total HT : {document.totalHT.toFixed(2)}</Typography>
-          <Typography variant="h6">Total TTC : {document.totalTTC.toFixed(2)}</Typography>
+          {/* Totaux */}
+          <div className="bg-white shadow rounded-2xl p-4">
+            <h2 className="text-xl font-semibold mb-4 text-gray-700">Totaux</h2>
+            <p><strong>Total HT :</strong> {document.totalHT.toFixed(2)}</p>
+            <p><strong>Total TTC :</strong> {document.totalTTC.toFixed(2)}</p>
+          </div>
 
-          {/* Bouton Retour */}
-          <Button variant="contained" color="primary" onClick={() => navigate(-1)}>
-            Retour
-          </Button>
-        </Box>
-      </Box>
+        
+        </main>
+      </div>
     </>
   );
 };

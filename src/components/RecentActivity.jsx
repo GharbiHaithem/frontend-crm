@@ -73,7 +73,7 @@ console.log(factures)
               ) : (
                 <>
                 {
-                  factures?.map((f)=>(
+                 factures&& factures?.slice(0,3)?.map((f)=>(
                           <tr>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -114,7 +114,7 @@ console.log(factures)
                       </>  }  
                         <div className="ml-4">
                           <div className="text-sm font-medium text-neutral-900">
-                         {f?.resteAPayer===f?.totalHT && f?.resteAPayer!==0 ? 'New order from Client' : 'Payment from Client'}   #{f.client.code}
+                         {f?.resteAPayer===f?.totalHT && f?.resteAPayer!==0 ? 'New order from Client' : 'Payment from Client'}   #{f?.client?.code}
                           </div>
                           <div className="text-xs text-neutral-500">
                             Invoice #I{f.referenceCommande}

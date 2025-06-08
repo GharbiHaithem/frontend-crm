@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import { authService } from "../services/api";
 import { useAppStore } from "../appStore";
-import {useAuth} from '../contexts/AuthContext'
+import { useAuth } from '../contexts/AuthContext'
 import axios from "axios";
 function Login() {
   const [loginInfo, setLoginInfo] = useState({
@@ -12,7 +12,7 @@ function Login() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
- const {connected} =useAuth()
+  const { connected } = useAuth()
   const setLoading = useAppStore((state) => state.setLoading);
   const navigate = useNavigate();
 
@@ -41,20 +41,19 @@ function Login() {
       setIsLoading(true);
       setLoading(true);
 
-      const response = await authService.login(loginInfo);
-      const { success, message, jwtToken, name, user } = response.data;
-
-      if (success) {
+      await authService.login(loginInfo).then((response) => {
         toast.success(message || "Login successful!");
-        localStorage.setItem("token", jwtToken);
-        localStorage.setItem("loggedInUser", name);
-        localStorage.setItem("user", JSON.stringify(user));
+        console.log(response.data)
+        localStorage.setItem("token", response.data.jwtToken);
+        localStorage.setItem("loggedInUser", response.data.name);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+        setTimeout(() => {
+          navigate('/')
+        }, 1500)
+      })
 
-        console.log("connected")
-     navigate('/home')
-      
-        
-      }
+
+
     } catch (err) {
       const errorMessage =
         err.response?.data?.message || "Login failed. Please try again.";
@@ -65,27 +64,31 @@ function Login() {
       setLoading(false);
     }
   };
-  useEffect(()=>{
-    console.log(connected)
 
-  },[])
-    const [message, setMessage] = useState("");
-    const handleChangePassword = async (e) => {
-      e.preventDefault();
-      try {
-        const res = await axios.post("http://localhost:5000/api/forgotPassword", { email:loginInfo.email });
-        setMessage("Un lien de réinitialisation a été envoyé à votre adresse email.");
-      } catch (err) {
-        setMessage("Erreur : " + err.response.data.message);
-      }
-    };
+  const [message, setMessage] = useState("");
+  useEffect(()=>{
+    if(message?.length>0){
+      setTimeout(()=>{
+        setMessage("")
+      },3000)
+    }
+  },[message])
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post("http://localhost:5000/api/forgotPassword", { email: loginInfo.email })
+      setMessage("Un lien de réinitialisation a été envoyé à votre adresse email.");
+    } catch (err) {
+      setMessage("Erreur : " + err.response.data.message);
+    }
+  };
   console.log(message)
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-           Connectez-vous à votre compte
+            Connectez-vous à votre compte
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Ou{" "}
@@ -93,7 +96,7 @@ function Login() {
               to="/signup"
               className="font-medium text-primary-600 hover:text-primary-500"
             >
-             créer un nouveau compte
+              créer un nouveau compte
             </Link>
           </p>
         </div>
@@ -122,12 +125,15 @@ function Login() {
             </div>
           </div>
         )}
-
+{message && <div class="bg-blue-100 border-t border-b border-blue-500 text-blue-700 px-4 py-3" role="alert">
+  <p class="font-bold">Informational message</p>
+  <p class="text-sm">{message}.</p>
+</div>}
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <label htmlFor="email" className="sr-only">
-            Adresse email
+                Adresse email
               </label>
               <input
                 id="email"
@@ -171,17 +177,17 @@ function Login() {
                 htmlFor="remember-me"
                 className="ml-2 block text-sm text-gray-900"
               >
-               Souviens-toi de moi
+                Souviens-toi de moi
               </label>
             </div>
 
             <div className="text-sm">
               <a
 
-               onClick={handleChangePassword}
+                onClick={handleChangePassword}
                 className="font-medium text-primary-600 hover:text-primary-500"
               >
-             Mot de passe oublié?
+                Mot de passe oublié?
               </a>
             </div>
           </div>
@@ -190,9 +196,8 @@ function Login() {
             <button
               type="submit"
               disabled={isLoading}
-              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${
-                isLoading ? "opacity-70 cursor-not-allowed" : ""
-              }`}
+              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${isLoading ? "opacity-70 cursor-not-allowed" : ""
+                }`}
             >
               {isLoading ? (
                 <svg

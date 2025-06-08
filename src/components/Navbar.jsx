@@ -5,12 +5,12 @@ import { useAuth } from "../contexts/AuthContext";
 import { FaFileLines } from "react-icons/fa6";
 import { FaSignOutAlt } from "react-icons/fa";
 export default function Navbar() {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem("user"))  || null;
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [userName, setUserName] = useState(user.name);
+  const [userName, setUserName] = useState(user.name );
 console.log(user)
   const UpdateOpen = useAppStore((state) => state.UpdateOpen);
   const dopen = useAppStore((state) => state.dopen);

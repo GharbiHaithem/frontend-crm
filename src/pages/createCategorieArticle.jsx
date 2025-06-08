@@ -6,6 +6,8 @@ import { TextField, Button, Grid, Box, Typography, Stack } from "@mui/material";
 import Sidenav from "../components/Sidenav";
 import Navbar from "../components/Navbar";
 import Swal from "sweetalert2";
+import { useNavigate, useParams } from "react-router-dom";
+import { categorieService } from "../services/api";
 
 // Schéma de validation Yup
 const validationSchema = Yup.object().shape({
@@ -21,18 +23,35 @@ const validationSchema = Yup.object().shape({
 });
 
 export default function CreateCategorieArticle() {
-
+const{id} = useParams()
+const navigate = useNavigate()
+const[catArticle,setCatArticle] = useState({})
+useEffect(()=>{
+  if(id){
+  categorieService.getById(id).then((response)=>setCatArticle(response.data))
+  }
+},[id])
   const formik = useFormik({
     initialValues: {
-      designationCategorie: "",
-     codeCategorie:""
+      designationCategorie:id ? catArticle?.designationCategorie : "",
+     codeCategorie:id ? catArticle?.codeCategorie  :""
     },
     validationSchema,
+    enableReinitialize:true,
     onSubmit: async (values, { resetForm }) => {
       try {
-        await axios.post("http://localhost:5000/categorie", values).then(()=>Swal.fire("créé !", "Catégorie d'article créée avec succès !"))
+        if(id){
+          await categorieService.update(id,values).then(()=>{Swal.fire("Edité !", "Catégorie d'article Edité avec succès !")
+            setTimeout(()=>{
+              navigate('/categorieArticle')
+            },1500)
+          })
+        }else{
+  await axios.post("http://localhost:5000/categorie", values).then(()=>Swal.fire("créé !", "Catégorie d'article créée avec succès !"))
       
         resetForm();
+        }
+      
       } catch (error) {
         console.error(
           "Erreur lors de la création de la catégorie :",
@@ -79,77 +98,70 @@ export default function CreateCategorieArticle() {
                           fontSize: "1.8rem",
                           padding: "10px",
                           background:"white",
-                          width:"100%"
+                          width:"50%"
                         }}>
-              Créer une Catégorie d'Articles
+              {id ? 'Editer' : 'Créer'} une Catégorie d'Article
             </Typography>
           </Box>
 
-          <form className="flex items-center gap-10  w-full" onSubmit={formik.handleSubmit}>
-        
-<Stack direction="column" alignItems="flex-start" spacing={2} sx={{ mt: 2, width: '80%' }}>
-  <TextField
-    name="designationCategorie"
-    label="Désignation de la Catégorie"
-    sx={{ 
-      width: '80%', // Augmentez ce pourcentage selon vos besoins
-      '& .MuiOutlinedInput-root': {
-        height: '40px' // Ajuste la hauteur si nécessaire
-      },
-        border: "none",
-      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
-      borderRadius: "8px",
-      backgroundColor: "#fff",
-      "& fieldset": {
-        border: "none", // Supprimer le border du Select
-      },
-    }}
-    value={formik.values.designationCategorie}
-    onChange={formik.handleChange}
-    onBlur={formik.handleBlur}
-    error={formik.touched.designationCategorie && Boolean(formik.errors.designationCategorie)}
-    helperText={formik.touched.designationCategorie && formik.errors.designationCategorie}
-    size="small"
-  />
-    <TextField
-    name="codeCategorie"
-    label="code de la Catégorie"
-    sx={{ 
-      width: '80%', // Augmentez ce pourcentage selon vos besoins
-      '& .MuiOutlinedInput-root': {
-        height: '40px' // Ajuste la hauteur si nécessaire
-      },
-        border: "none",
-      boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
-      borderRadius: "8px",
-      backgroundColor: "#fff",
-      "& fieldset": {
-        border: "none", // Supprimer le border du Select
-      },
-    }}
-    value={formik.values.codeCategorie}
-    onChange={formik.handleChange}
-    onBlur={formik.handleBlur}
-    error={formik.touched.codeCategorie && Boolean(formik.errors.codeCategorie)}
-    helperText={formik.touched.codeCategorie && formik.errors.codeCategorie}
-    size="small"
-  />
-  <Button
-    type="submit"
-    color="primary"
-    variant="contained"
-    disabled={formik.isSubmitting}
-    sx={{ 
-      height: '40px', 
-      width: '20%', // Ajustez en fonction de la largeur du TextField
-      minWidth: '100px' // Largeur minimale pour le texte du bouton
-    }}
-  >
-    {formik.isSubmitting ? "Création..." : "Créer"}
-  </Button>
-</Stack>
+      <form className="flex items-center gap-10 w-full" onSubmit={formik.handleSubmit}>
+  <div className="flex flex-col gap-4 w-4/5 mt-4">
 
-          </form>
+    {/* Désignation */}
+    <div className="w-full">
+      <label htmlFor="designationCategorie" className="block font-semibold mb-1 text-gray-700">
+        Désignation de la Catégorie
+      </label>
+      <input
+        type="text"
+        name="designationCategorie"
+        id="designationCategorie"
+        value={formik.values.designationCategorie}
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        className={`w-full px-4 py-2 rounded-md shadow-sm border focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 bg-white
+          ${formik.touched.designationCategorie && formik.errors.designationCategorie ? "border-red-500" : "border-gray-300"}
+        `}
+        style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}
+      />
+      {formik.touched.designationCategorie && formik.errors.designationCategorie && (
+        <p className="text-red-500 text-sm mt-1">{formik.errors.designationCategorie}</p>
+      )}
+    </div>
+
+    {/* Code */}
+    <div className="w-full">
+      <label htmlFor="codeCategorie" className="block font-semibold mb-1 text-gray-700">
+        Code de la Catégorie
+      </label>
+      <input
+        type="text"
+        name="codeCategorie"
+        id="codeCategorie"
+        value={formik.values.codeCategorie}
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        className={`w-full px-4 py-2 rounded-md shadow-sm border focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 bg-white
+          ${formik.touched.codeCategorie && formik.errors.codeCategorie ? "border-red-500" : "border-gray-300"}
+        `}
+        style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}
+      />
+      {formik.touched.codeCategorie && formik.errors.codeCategorie && (
+        <p className="text-red-500 text-sm mt-1">{formik.errors.codeCategorie}</p>
+      )}
+    </div>
+
+    {/* Bouton */}
+    <button
+      type="submit"
+      disabled={formik.isSubmitting}
+      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow transition duration-200"
+    >
+      {id ? 'Editer' : formik.isSubmitting ? "Création..." : "Créer"}
+    </button>
+  </div>
+</form>
+
         </Box>
       </Box>
     </>

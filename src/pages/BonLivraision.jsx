@@ -39,9 +39,12 @@ const BonLivraisonPage = () => {
       id,
       numero,
     };
+    console.log(data)
+     console.log(lignes)
+        console.log(client)
     // Créer un nouveau document PDF
     const doc = new jsPDF();
-    const dateFormatee = new Date(document.date).toLocaleDateString();
+    const dateFormatee = new Date(date).toLocaleDateString();
     // Ajouter le titre
     doc.setFontSize(18);
     doc.setTextColor(33, 150, 243); // Couleur bleue
@@ -52,7 +55,7 @@ const BonLivraisonPage = () => {
     doc.setTextColor(0, 0, 0); // Couleur noire
     doc.text(`Numéro: ${numero}`, 15, 30);
     doc.text(`Date: ${dateFormatee }`, 15, 40);
-    doc.text(`Client: ${client.raisonSociale}`, 15, 50);
+    doc.text(`Client: ${client.raison_social}`, 15, 50);
     doc.text(`Réf. BCC: ${refBCC}`, 15, 60);
     doc.text(`Point de Vente: ${pointVente}`, 15, 70);
     doc.text(`Type de Paiement: ${typePaiement}`, 15, 80);
@@ -61,7 +64,7 @@ const BonLivraisonPage = () => {
     // Préparer les données du tableau
     const tableData = lignes.map((ligne, index) => [
       index + 1,
-      ligne.codeArticle,
+      ligne.code,
       ligne.famille,
       ligne.libelleArticle,
       ligne.quantite,
@@ -75,7 +78,7 @@ const BonLivraisonPage = () => {
     const headers = [
       "N°",
       "Code Article",
-      "Famille",
+   
       "Libellé Article",
       "Quantité",
       "Prix HT",
@@ -269,9 +272,7 @@ const BonLivraisonPage = () => {
                   <th style={{ padding: "5px", border: "1px solid #ccc" }}>
                     Code Article
                   </th>
-                  <th style={{ padding: "5px", border: "1px solid #ccc" }}>
-                    Famille
-                  </th>
+              
                   <th style={{ padding: "5px", border: "1px solid #ccc" }}>
                     Libelle Article
                   </th>
@@ -296,8 +297,8 @@ const BonLivraisonPage = () => {
                 {lignes.map((ligne, index) => (
                   <tr key={index}>
                     <td>{index + 1}</td>
-                    <td>{ligne.codeArticle}</td>
-                    <td>{ligne.famille}</td>
+                    <td>{ligne.code}</td>
+                 
                     <td>{ligne.libelleArticle}</td>
                     <td>{ligne.quantite}</td>
                     <td>{ligne.prixHT}</td>
