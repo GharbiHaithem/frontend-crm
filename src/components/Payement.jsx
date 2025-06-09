@@ -160,21 +160,31 @@ const  Espece= ({montant,setMontant,setErreur,handlePayement,setErreurPayement,e
 
   return (
     <div className='flex flex-col gap-2 w-1/3'>
-             <TextField
+           <TextField
   label="Montant à payer"
-  value={montant} // ceci lie l'input à l'état
-  onChange={(e) =>{ setMontant(e.target.value)
-    setErreur((prev)=>({
-      ...prev,
-      montant:''
-    }))
-  }} // met à jour l'état à chaque frappe
-  type="number"
-   size={"small"}
-   required
-     error={!!erreur.montant} // bordure rouge si erreur.montant est défini
-    helperText={erreur.montant || erreurPayement} // message d'erreur affiché sous le champ
+  value={montant}
+  onChange={(e) => {
+    const value = e.target.value;
+
+    // Autorise les nombres avec max 2 décimales et 10 caractères au total
+    if (/^\d*\.?\d{0,2}$/.test(value) && value.length <= 10) {
+      setMontant(value);
+      setErreur((prev) => ({
+        ...prev,
+        montant: '',
+      }));
+    }
+  }}
+  type="text" // éviter 'number' pour avoir un meilleur contrôle sur les entrées
+  size="small"
+  required
+  error={!!erreur.montant}
+  helperText={erreur.montant || erreurPayement}
+  inputProps={{
+    inputMode: 'decimal',
+  }}
 />
+
                    
                     
     <button className='bg-blue-600 text-white p-2 rounded-lg' onClick={handlePayement}>Payer</button>
@@ -210,41 +220,67 @@ const Effet=({montant,setMontant,dateEcheance,erreur,setErreur,setDateEcheance,h
           </Select>
         </FormControl>
 
-        <TextField
-        style={{ flex: 1 }}
-          className="w-1/2"
-          label="Code Banque"
-          variant="outlined"
-          value={codeBanque}
-          onChange={(e)=>{setCodeBanque(e.target.value)
-              setErreur((prev)=>({
-              ...prev,
-              codeBanque:''
-            }))
-          }}
-           size={"small"}
-           required
-        />
+<TextField
+  style={{ flex: 1 }}
+  className="w-1/2"
+  label="Code Banque"
+  variant="outlined"
+  value={codeBanque}
+  onChange={(e) => {
+    const value = e.target.value;
+
+    // N'accepte que des chiffres (0 à 6 chiffres)
+    if (/^\d{0,8}$/.test(value)) {
+      setCodeBanque(value);
+      setErreur((prev) => ({
+        ...prev,
+        codeBanque: '',
+      }));
+    }
+  }}
+  size="small"
+  required
+  inputProps={{
+    inputMode: 'numeric', // affiche le clavier numérique sur mobile
+    pattern: '[0-9]*',     // empêche les lettres
+    maxLength: 6,          // en bonus, limite la saisie
+  }}
+  error={!!erreur.codeBanque}
+  helperText={erreur.codeBanque}
+/>
+
+
       </div>
 
       {/* Ligne 2 */}
       <div className="flex gap-4">
-        <TextField
-        style={{ flex: 1 }}
-          className="w-1/2"
-          label="Numéro Compte"
-          type="number"
-          variant="outlined"
-            value={numeroCompte}
-          onChange={(e)=>{setNumeroCompte(e.target.value)
-             setErreur((prev)=>({
-              ...prev,
-              numeroCompte:''
-            }))
-          }}
-           size={"small"}
-           required
-        />
+       <TextField
+  style={{ flex: 1 }}
+  className="w-1/2"
+  label="Numéro Compte"
+  type="text" // ⚠️ change ici
+  variant="outlined"
+  value={numeroCompte}
+  onChange={(e) => {
+    const value = e.target.value;
+
+    // Autorise uniquement les chiffres (0-9), et max 8 chiffres
+    if (/^\d{0,8}$/.test(value)) {
+      setNumeroCompte(value);
+      setErreur((prev) => ({
+        ...prev,
+        numeroCompte: '',
+      }));
+    }
+  }}
+  size="small"
+  required
+  inputProps={{
+    inputMode: 'numeric', // clavier numérique mobile
+    pattern: '[0-9]*',
+  }}
+/>
+
           <TextField
   label="Montant à payer"
   value={montant} // ceci lie l'input à l'état
@@ -314,45 +350,69 @@ const Cheque=({montant,setMontant,handlePayement, erreurPayement,numeroCompte,se
   )}
         </FormControl>
 
-        <TextField
-        required
-        style={{ flex: 1 }}
-          className="w-1/2"
-          label="Code Banque"
-          variant="outlined"
-          value={codeBanque}
-          onChange={(e)=>{setCodeBanque(e.target.value)
-            setErreur((prev)=>({
-              ...prev,
-              codeBanque:''
-            }))
-          }}
-           size={"small"}
-             error={!!erreur.codeBanque} // bordure rouge si erreur.montant est défini
-    helperText={erreur.codeBanque} // message d'erreur affiché sous le champ
-        />
+     <TextField
+  required
+  style={{ flex: 1 }}
+  className="w-1/2"
+  label="Code Banque"
+  variant="outlined"
+  value={codeBanque}
+  onChange={(e) => {
+    const value = e.target.value;
+
+    // Autoriser uniquement des chiffres, max 6 chiffres (modifie selon ton besoin)
+    if (/^\d{0,8}$/.test(value)) {
+      setCodeBanque(value);
+      setErreur((prev) => ({
+        ...prev,
+        codeBanque: '',
+      }));
+    }
+  }}
+  size="small"
+  inputProps={{
+    inputMode: 'numeric',
+    pattern: '[0-9]*',
+    maxLength: 8, // bonus pour empêcher le collage excessif
+  }}
+  error={!!erreur.codeBanque}
+  helperText={erreur.codeBanque}
+/>
+
       </div>
 
       {/* Ligne 2 */}
       <div className="flex gap-4">
-        <TextField
-        required
-        style={{ flex: 1 }}
-          className="w-1/2"
-          label="Numéro Compte"
-          type="number"
-          variant="outlined"
-            value={numeroCompte}
-          onChange={(e)=>{setNumeroCompte(e.target.value)
-             setErreur((prev)=>({
-              ...prev,
-              numeroCompte:''
-            }))
-          }}
-           size={"small"}
-             error={!!erreur.numeroCompte} // bordure rouge si erreur.montant est défini
-    helperText={erreur.numeroCompte} // message d'erreur affiché sous le champ
-        />
+      <TextField
+  required
+  style={{ flex: 1 }}
+  className="w-1/2"
+  label="Numéro Compte"
+  type="text" // ✅ pas "number"
+  variant="outlined"
+  value={numeroCompte}
+  onChange={(e) => {
+    const value = e.target.value;
+
+    // ✅ N'autorise que des chiffres et max 8 caractères
+    if (/^\d{0,8}$/.test(value)) {
+      setNumeroCompte(value);
+      setErreur((prev) => ({
+        ...prev,
+        numeroCompte: '',
+      }));
+    }
+  }}
+  size="small"
+  inputProps={{
+    inputMode: 'numeric', // clavier numérique mobile
+    pattern: '[0-9]*',
+    maxLength: 8, // sécurité en plus contre le coller
+  }}
+  error={!!erreur.numeroCompte}
+  helperText={erreur.numeroCompte}
+/>
+
           <TextField
           required
   label="Montant à payer"

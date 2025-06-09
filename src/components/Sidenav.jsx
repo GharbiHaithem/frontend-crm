@@ -24,7 +24,7 @@ const menuItems = [
     icon: "truck",
   },
   { path: "/factures", label: "Factures", icon: "receipt-tax" },
-  { path: "/payement", label: "Payement", icon: "payement" },
+  { path: "/payement", label: "Paiement", icon: "payement" },
   { path: "/EventCalendar", label: "Calendrier", icon: "calendar" },
   { path: "/settings", label: "Paramètres", icon: "cog" },
  

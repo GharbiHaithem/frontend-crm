@@ -211,7 +211,15 @@ console.log(typeDocument)
       <Box sx={{ display: "flex" }}>
         <Sidenav />
         <Box component="main" sx={{ flexGrow: 1, p: 3, paddingTop: "10px" }}>
-          <Typography variant="h4">Éditer {typeDocument}</Typography>
+          <Typography  variant="h5" sx={{ marginBottom: 3 }}  style={{
+                          fontWeight: "bold",
+                          textAlign: "start",
+                          color: "#1976d2",
+                          fontSize: "1.8rem",
+                          padding: "10px",
+                          background:"white",
+                          width:"100%"
+                        }}>Éditer {typeDocument}</Typography>
 
           {/* Formulaire d'édition */}
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>

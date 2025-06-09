@@ -5,7 +5,7 @@ import format from "date-fns/format";
 import parse from "date-fns/parse";
 import startOfWeek from "date-fns/startOfWeek";
 import getDay from "date-fns/getDay";
-import enUS from "date-fns/locale/en-US";
+import fr from "date-fns/locale/fr";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 
 import EventInfo from "./EventInfo";
@@ -18,16 +18,17 @@ import AddEventTache from "./AddEventTache";
 import AddEventVisite from "./AddEventVisite";
 
 const locales = {
-  "en-US": enUS,
+  "fr": fr,
 };
 
 const localizer = dateFnsLocalizer({
   format,
   parse,
-  startOfWeek,
+  startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 1 }), // semaine commence lundi
   getDay,
   locales,
 });
+
 
 const initialEventFormState = {
   description: "",
@@ -131,6 +132,24 @@ const EventCalendar = () => {
   };
 console.log(events)
 console.log(selectedEventType)
+const messagesFr = {
+  date: 'Date',
+  time: 'Heure',
+  event: 'Événement',
+  allDay: 'Toute la journée',
+  week: 'Semaine',
+  work_week: 'Semaine de travail',
+  day: 'Jour',
+  month: 'Mois',
+  previous: 'Précédent',
+  next: 'Suivant',
+  yesterday: 'Hier',
+  tomorrow: 'Demain',
+  today: "Aujourd'hui",
+  agenda: 'Agenda',
+  noEventsInRange: "Aucun événement dans cette période",
+  showMore: total => `+ ${total} de plus`
+};
 
   return (
     <Box mt={1} mb={2} component="main" sx={{ flexGrow: 1, py: 1 }}>
@@ -256,6 +275,8 @@ console.log(selectedEventType)
             {(selectedEventType)}
          <Calendar
   localizer={localizer}
+   messages={messagesFr}
+   culture="fr"
   events={events}
   onSelectEvent={handleSelectEvent}
   onSelectSlot={handleSelectSlot}

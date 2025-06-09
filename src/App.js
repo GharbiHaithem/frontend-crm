@@ -35,7 +35,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import Payement from "./components/Payement";
-import PaymentSuccess from "./pages/PayementSuccess";
+
 import DetailsClient from "./pages/DetailsClient";
 import DetailsArticle from "./components/DetailsArticle/DetailsArticle";
 import Caisse from "./components/Caisse";
@@ -308,16 +308,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/payment-success"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <PaymentSuccess />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
+          
 
             <Route
               path="/documents/modifier/:id"

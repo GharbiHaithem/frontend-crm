@@ -262,7 +262,7 @@ const DocumentForm = ({ typeDocument }) => {
   };
 
   const handleCancel = () => {
-    navigate("/Home");
+    navigate("/devis-consulter");
   };
   const [erreurArticle, setErreurArticle] = useState(null)
   const ouvrirFenetreGeneration = () => {
@@ -398,6 +398,8 @@ const DocumentForm = ({ typeDocument }) => {
     axios.get(`http://localhost:5000/articles/`).then((result) => setArticle(result.data))
   }, [])
   console.log(article)
+  const [customError, setCustomError] = useState('');
+
   return (
     <>
       <Navbar />
@@ -633,37 +635,57 @@ const DocumentForm = ({ typeDocument }) => {
                 <Typography variant="h6" gutterBottom>
                   Général
                 </Typography>
-                <TextField
-                  label="Date"
-                  name="date"
-                  type="date"
-                  fullWidth
-                  margin="normal"
-                  value={formik.values.date}
-                  onChange={(e) => {
-                    formik.handleChange(e);
-                    handelnumero(e.target.value, typeDocument);
-                  }}
-                  InputLabelProps={{ shrink: true }}
-                  error={formik.touched.date && Boolean(formik.errors.date)}
-                  helperText={formik.touched.date && formik.errors.date}
-                  size="small"
-                  InputProps={{
-                    inputProps: {
-                      min: formatDate(today),
-                      max: formatDate(fiveDaysLater),
-                    },
-                  }}
-                  sx={{
-                    border: "none",
-                    boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
-                    borderRadius: "8px",
-                    backgroundColor: "#fff",
-                    "& fieldset": {
-                      border: "none", // Supprimer le border du Select
-                    },
-                  }}
-                />
+               <TextField
+  label="Date"
+  name="date"
+  type="date"
+  fullWidth
+  margin="normal"
+  value={formik.values.date}
+  onChange={(e) => {
+    const inputDate = new Date(e.target.value);
+    const minDate = new Date(today);
+    const maxDate = new Date(fiveDaysLater);
+
+    // Réinitialiser l'erreur personnalisée
+    setCustomError('');
+
+    if (inputDate < minDate || inputDate > maxDate) {
+      // Affiche une alerte ou définis une erreur personnalisée
+      setCustomError("Veuillez choisir une date entre aujourd'hui et les 5 prochains jours.");
+      return;
+    }
+
+    formik.handleChange(e);
+    handelnumero(e.target.value, typeDocument);
+  }}
+  InputLabelProps={{ shrink: true }}
+  error={
+    formik.touched.date &&
+    Boolean(formik.errors.date) ||
+    Boolean(customError)
+  }
+  helperText={
+    (formik.touched.date && formik.errors.date) || customError
+  }
+  size="small"
+  InputProps={{
+    inputProps: {
+      min: formatDate(today),
+      max: formatDate(fiveDaysLater),
+    },
+  }}
+  sx={{
+    border: "none",
+    boxShadow: "0px 2px 10px rgba(0, 0, 0, 0.1)",
+    borderRadius: "8px",
+    backgroundColor: "#fff",
+    "& fieldset": {
+      border: "none",
+    },
+  }}
+/>
+
                 <TextField
 
                   label="Numéro"
@@ -1016,7 +1038,7 @@ const DocumentForm = ({ typeDocument }) => {
               >
                 Enregistrer
               </Button>
-              <Button
+              {/* <Button
                 variant="contained"
                 color="secondary"
                 onClick={ouvrirFenetreGeneration}
@@ -1024,7 +1046,7 @@ const DocumentForm = ({ typeDocument }) => {
                 disabled={!enregistrementReussi}
               >
                 Générer
-              </Button>
+              </Button> */}
               <Button
                 variant="outlined"
                 color="error"
