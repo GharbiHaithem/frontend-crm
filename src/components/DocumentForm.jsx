@@ -6,6 +6,7 @@ import * as Yup from "yup";
 import Navbar from "../components/Navbar";
 import Sidenav from "../components/Sidenav";
 import Box from "@mui/material/Box";
+import { RiDeleteBin6Line } from "react-icons/ri";
 import {
   Button,
   TextField,
@@ -976,7 +977,7 @@ const DocumentForm = ({ typeDocument }) => {
                           size="small"
                           color="error"
                         >
-                          Supprimer
+                       <RiDeleteBin6Line className="text-2xl"/>
                         </Button>
 
                       </td>

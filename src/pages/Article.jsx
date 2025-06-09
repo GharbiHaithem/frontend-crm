@@ -232,19 +232,19 @@ console.log(filters)
                 <TableBody>
                   {Array.isArray(articles) && articles.map((article) => (
                     <TableRow key={article._id} hover style={{ height: "60px" }}>
-                      <TableCell style={{ fontSize: "0.8rem", padding: "10px" }}>
+                      <TableCell style={{ fontSize: "0.8rem", padding: "10px",textAlign:'center' }}>
                         {article.code}
                       </TableCell>
-                      <TableCell style={{ fontSize: "0.8rem", padding: "10px" }}>
+                      <TableCell style={{ fontSize: "0.8rem", padding: "10px",textAlign:'center' }}>
                         {article.libelle}
                       </TableCell>
-                      <TableCell style={{ fontSize: "0.8rem", padding: "10px" }}>
+                      <TableCell style={{ fontSize: "0.8rem", padding: "10px",textAlign:'center' }}>
                         {article.Nombre_unite}
                       </TableCell>
-                      <TableCell style={{ fontSize: "0.8rem", padding: "10px" }}>
+                      <TableCell style={{ fontSize: "0.8rem", padding: "10px",textAlign:'center' }}>
                         {article.Nature}
                       </TableCell>
-                      <TableCell style={{ fontSize: "0.8rem", padding: "10px" }}>
+                      <TableCell style={{ fontSize: "0.8rem", padding: "10px",textAlign:'center' }}>
                         {article.image_article ? (
                           <img
                             src={`data:image/jpeg;base64,${Buffer.from(
